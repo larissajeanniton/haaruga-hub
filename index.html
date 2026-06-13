@@ -160,6 +160,12 @@ textarea.form-input{min-height:100px;resize:vertical;}
 .tag.removable:hover{background:var(--red-pale);color:var(--red);}
 .tag .tag-x{font-weight:600;opacity:.6;}
 .student-photo img{width:100%;height:100%;object-fit:cover;}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+.gallery-item{position:relative;aspect-ratio:1;border-radius:5px;overflow:hidden;border:1px solid var(--border);background:var(--warm-cream);display:block;}
+.gallery-item img,.gallery-item video{width:100%;height:100%;object-fit:cover;display:block;}
+.gallery-item.uploading{display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);text-align:center;}
+.gallery-remove{position:absolute;top:5px;right:5px;background:rgba(26,26,23,.72);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;}
+.gallery-remove:hover{background:var(--red);}
 .auth-gate{max-width:480px;margin:2.5rem auto;padding:0 2rem;}
 .auth-card{background:white;border:1px solid var(--border);border-radius:6px;padding:2rem;text-align:center;border-top:3px solid var(--red);}
 .auth-card h3{font-family:'Playfair Display',serif;font-weight:400;font-size:1.4rem;margin-bottom:8px;}
@@ -257,11 +263,6 @@ footer span{color:var(--tan);}
       <h2 id="profileName">Maya Goldstein</h2>
       <span class="profile-track-badge" id="profileTrack">English Program</span>
       <p class="profile-bio" id="profileBio">Documentary filmmaker fascinated by stories of displacement, memory, and identity.</p>
-      <div class="profile-links">
-        <span class="profile-link" data-en="Vimeo ↗" data-he="וימאו ↗">Vimeo ↗</span>
-        <span class="profile-link" data-en="Instagram ↗" data-he="אינסטגרם ↗">Instagram ↗</span>
-        <span class="profile-link" data-en="📄 Download reel" data-he="📄 הורד סרטון">📄 Download reel</span>
-      </div>
       <button class="profile-contact-btn" onclick="openContactModal()"><span data-en="✉ Contact" data-he="✉ צרו קשר">✉ Contact</span></button>
     </div>
   </div>
@@ -281,6 +282,12 @@ footer span{color:var(--tan);}
         <h3 data-en="Current projects" data-he="פרויקטים נוכחיים">Current projects</h3>
         <div id="profileProjects"></div>
       </div>
+    </div>
+  </div>
+  <div class="profile-gallery-wrap" id="profileGalleryWrap" style="display:none;padding:0 2rem 2rem;">
+    <div class="profile-section">
+      <h3 data-en="Project Gallery" data-he="גלריית פרויקטים">Project Gallery</h3>
+      <div class="gallery-grid" id="profileGallery"></div>
     </div>
   </div>
 </div>
@@ -567,13 +574,15 @@ footer span{color:var(--tan);}
         <input type="text" id="pf_whatsapp" class="form-input" data-placeholder-en="e.g. 972521234567 (country code, no +)" data-placeholder-he="למשל 972521234567 (קידומת מדינה, בלי +)" placeholder="e.g. 972521234567 (country code, no +)">
       </div>
     </div>
+    <h3 class="form-section-title" data-en="Project Gallery" data-he="גלריית פרויקטים">Project Gallery</h3>
     <div class="form-group">
-      <label class="form-label" data-en="Upload work file" data-he="העלו קובץ עבודה">Upload work file</label>
-      <div class="upload-zone" style="padding:1.25rem;" onclick="document.getElementById('workInput').click()">
-        <p id="workPrompt" data-en="📎 Drag a file or click to browse" data-he="📎 גררו קובץ או לחצו לעיון">📎 Drag a file or click to browse</p>
-        <span data-en="PDF, MP4, MOV · Max 50MB" data-he="PDF, MP4, MOV · עד 50MB">PDF, MP4, MOV · Max 50MB</span>
-        <input type="file" id="workInput" accept=".pdf,.mp4,.mov" style="display:none" onchange="previewWorkFile(this)">
+      <label class="form-label" data-en="Photos &amp; videos from your work" data-he="תמונות וסרטונים מהעבודות שלכם">Photos &amp; videos from your work</label>
+      <div class="upload-zone" id="galleryZone" onclick="document.getElementById('galleryInput').click()" ondragover="galleryDragOver(event)" ondragleave="galleryDragLeave(event)" ondrop="galleryDrop(event)">
+        <p data-en="🎞 Drag photos or videos here, or click to upload" data-he="🎞 גררו תמונות או סרטונים לכאן, או לחצו להעלאה">🎞 Drag photos or videos here, or click to upload</p>
+        <span data-en="JPG, PNG, MP4, MOV · Max 50MB each · add several" data-he="JPG, PNG, MP4, MOV · עד 50MB לכל אחד · אפשר כמה">JPG, PNG, MP4, MOV · Max 50MB each · add several</span>
+        <input type="file" id="galleryInput" accept="image/*,video/*" multiple style="display:none" onchange="galleryPick(this)">
       </div>
+      <div class="gallery-grid" id="galleryPreview" style="margin-top:12px;"></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:2rem;padding-bottom:3rem;flex-wrap:wrap;">
       <button class="btn-primary" onclick="saveProfile()" data-en="Save profile" data-he="שמרו פרופיל">Save profile</button>
@@ -606,7 +615,10 @@ let currentLang = 'en';
 let currentProfileId = null;
 let currentProfileContact = null;   // {email, whatsapp, instagram} for the open profile
 let photoDataUrl = null;            // the chosen profile photo, as a data URL
+let galleryUrls = [];              // uploaded Project Gallery media URLs
+let galleryCounter = 0;            // keeps uploaded filenames unique
 const pages = ['home','profile','bulletin','faculty','editProfile'];
+function isVideoUrl(u){ return /\.(mp4|mov|webm|m4v|ogg)(\?|$)/i.test(u || ''); }
 
 // Small helpers
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -659,6 +671,20 @@ async function showProfile(id) {
   document.getElementById('profileProjects').innerHTML = p.working_on
     ? `<div class="project-card"><h4>${esc(p.working_on)}</h4></div>`
     : `<span style="color:var(--text-muted);font-size:13px;">${currentLang==='he'?'אין פרויקט נוכחי':'No current project listed'}</span>`;
+
+  const gal = p.gallery || [];
+  const galWrap = document.getElementById('profileGalleryWrap');
+  const galEl = document.getElementById('profileGallery');
+  if (gal.length) {
+    galWrap.style.display = 'block';
+    galEl.innerHTML = gal.map(u => isVideoUrl(u)
+      ? `<div class="gallery-item"><video src="${esc(u)}" controls></video></div>`
+      : `<a class="gallery-item" href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt=""></a>`
+    ).join('');
+  } else {
+    galWrap.style.display = 'none';
+    galEl.innerHTML = '';
+  }
 
   showPage('profile');
 }
@@ -775,6 +801,7 @@ async function saveProfile() {
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
+    gallery: galleryUrls,
     updated_at: new Date().toISOString()
   };
   if (photoDataUrl) row.photo = photoDataUrl;
@@ -798,6 +825,8 @@ async function loadMyProfile() {
   setVal('pf_vimeo', p.vimeo); setVal('pf_website', p.website);
   setVal('pf_instagram', p.instagram); setVal('pf_whatsapp', p.whatsapp);
   setTags(p.interests || []);
+  galleryUrls = p.gallery || [];
+  renderMyGallery();
   if (p.photo) {
     photoDataUrl = p.photo;
     const img = document.getElementById('photoPreview');
@@ -864,6 +893,66 @@ function getTags() {
 function setTags(arr) {
   document.querySelectorAll('#tagArea .tag').forEach(c => c.remove());
   (arr || []).forEach(t => addTagChip(t));
+}
+
+// ----- Project Gallery (photos & videos via Supabase Storage) -----
+function galleryPick(input) { handleGalleryFiles(input.files); input.value = ''; }
+function galleryDragOver(e) { e.preventDefault(); document.getElementById('galleryZone').classList.add('dragover'); }
+function galleryDragLeave(e) { document.getElementById('galleryZone').classList.remove('dragover'); }
+function galleryDrop(e) {
+  e.preventDefault();
+  document.getElementById('galleryZone').classList.remove('dragover');
+  handleGalleryFiles(e.dataTransfer.files);
+}
+
+async function handleGalleryFiles(files) {
+  if (!sb) { showToast('Not connected to the database.'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
+  for (const file of Array.from(files)) {
+    if (file.size > 50 * 1024 * 1024) {
+      showToast((file.name || 'File') + ': ' + (currentLang === 'he' ? 'גדול מ-50MB' : 'larger than 50MB'));
+      continue;
+    }
+    const isVideo = (file.type || '').startsWith('video/');
+    const tile = document.createElement('div');
+    tile.className = 'gallery-item uploading';
+    tile.textContent = currentLang === 'he' ? 'מעלה…' : 'Uploading…';
+    document.getElementById('galleryPreview').appendChild(tile);
+
+    const safe = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = session.user.id + '/' + Date.now() + '_' + (galleryCounter++) + '_' + safe;
+    const { error } = await sb.storage.from('gallery').upload(path, file, { upsert: false });
+    if (error) { tile.classList.remove('uploading'); tile.textContent = '⚠'; showToast(error.message); continue; }
+    const { data: { publicUrl } } = sb.storage.from('gallery').getPublicUrl(path);
+    galleryUrls.push(publicUrl);
+    renderGalleryTile(tile, publicUrl, isVideo);
+  }
+}
+
+function renderGalleryTile(tile, url, isVideo) {
+  tile.className = 'gallery-item';
+  tile.innerHTML = (isVideo
+    ? `<video src="${esc(url)}" muted></video>`
+    : `<img src="${esc(url)}" alt="">`)
+    + `<span class="gallery-remove" title="Remove">×</span>`;
+  tile.querySelector('.gallery-remove').onclick = (ev) => {
+    ev.stopPropagation();
+    galleryUrls = galleryUrls.filter(u => u !== url);
+    tile.remove();
+  };
+}
+
+function renderMyGallery() {
+  const wrap = document.getElementById('galleryPreview');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  galleryUrls.forEach(url => {
+    const tile = document.createElement('div');
+    tile.className = 'gallery-item';
+    wrap.appendChild(tile);
+    renderGalleryTile(tile, url, isVideoUrl(url));
+  });
 }
 
 function previewWorkFile(input) {
