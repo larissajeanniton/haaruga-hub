@@ -154,6 +154,12 @@ textarea.form-input{min-height:100px;resize:vertical;}
 .upload-zone:hover{border-color:var(--sage-light);}
 .photo-preview{display:none;width:110px;height:110px;border-radius:50%;object-fit:cover;margin:0 auto 8px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.12);}
 .photo-preview.show{display:block;}
+.upload-zone.dragover{border-color:var(--sage);background:var(--sage-pale);}
+.empty-state{text-align:center;padding:3rem 1.5rem;color:var(--text-muted);font-size:14px;line-height:1.7;border:1px dashed var(--border);border-radius:6px;background:var(--warm-cream);}
+.tag.removable{cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+.tag.removable:hover{background:var(--red-pale);color:var(--red);}
+.tag .tag-x{font-weight:600;opacity:.6;}
+.student-photo img{width:100%;height:100%;object-fit:cover;}
 .auth-gate{max-width:480px;margin:2.5rem auto;padding:0 2rem;}
 .auth-card{background:white;border:1px solid var(--border);border-radius:6px;padding:2rem;text-align:center;border-top:3px solid var(--red);}
 .auth-card h3{font-family:'Playfair Display',serif;font-weight:400;font-size:1.4rem;margin-bottom:8px;}
@@ -237,85 +243,8 @@ footer span{color:var(--tan);}
       </div>
     </div>
 
-    <div class="student-grid">
-      <div class="student-card" onclick="showProfile('maya')" data-track="english">
-        <div class="student-photo">🎬</div>
-        <div class="student-info">
-          <div class="student-name">Maya Goldstein</div>
-          <div class="student-track" data-en="English Program · Year 1" data-he="מסלול אנגלית · שנה א׳">English Program · Year 1</div>
-          <div class="student-interests">
-            <span class="tag" data-en="Documentary" data-he="דוקומנטרי">Documentary</span>
-            <span class="tag" data-en="Editing" data-he="עריכה">Editing</span>
-            <span class="tag amber" data-en="Directing" data-he="בימוי">Directing</span>
-          </div>
-          <div class="student-working"><strong data-en="Working on:" data-he="עובדת על:">Working on:</strong> <span data-en="&quot;Borders of Memory&quot;" data-he="&quot;גבולות הזיכרון&quot;">"Borders of Memory"</span></div>
-        </div>
-      </div>
-
-      <div class="student-card" onclick="showProfile('ron')" data-track="hebrew">
-        <div class="student-photo">📷</div>
-        <div class="student-info">
-          <div class="student-name">רון בן-דוד</div>
-          <div class="student-track" data-en="Hebrew Program · Year 1" data-he="מסלול עברית · שנה א׳">Hebrew Program · Year 1</div>
-          <div class="student-interests">
-            <span class="tag amber" data-en="Cinematography" data-he="צילום">Cinematography</span>
-            <span class="tag" data-en="Drama" data-he="דרמה">Drama</span>
-          </div>
-          <div class="student-working"><strong data-en="Available:" data-he="זמין:">Available:</strong> <span data-en="DOP for short films" data-he="צלם לסרטים קצרים">DOP for short films</span></div>
-        </div>
-      </div>
-
-      <div class="student-card" data-track="hebrew">
-        <div class="student-photo">✏️</div>
-        <div class="student-info">
-          <div class="student-name">ליאור שפירו</div>
-          <div class="student-track" data-en="Hebrew Program · Year 1" data-he="מסלול עברית · שנה א׳">Hebrew Program · Year 1</div>
-          <div class="student-interests">
-            <span class="tag" data-en="Screenwriting" data-he="כתיבת תסריט">Screenwriting</span>
-            <span class="tag" data-en="Comedy" data-he="קומדיה">Comedy</span>
-          </div>
-          <div class="student-working"><strong data-en="Working on:" data-he="עובד על:">Working on:</strong> <span data-en="Feature script" data-he="תסריט פיצ׳ר">Feature script</span></div>
-        </div>
-      </div>
-
-      <div class="student-card" data-track="english">
-        <div class="student-photo">🎭</div>
-        <div class="student-info">
-          <div class="student-name">Nia Okafor</div>
-          <div class="student-track" data-en="English Program · Year 1" data-he="מסלול אנגלית · שנה א׳">English Program · Year 1</div>
-          <div class="student-interests">
-            <span class="tag amber" data-en="Acting" data-he="משחק">Acting</span>
-            <span class="tag" data-en="Drama" data-he="דרמה">Drama</span>
-            <span class="tag" data-en="Directing" data-he="בימוי">Directing</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="student-card" data-track="hebrew">
-        <div class="student-photo">🎵</div>
-        <div class="student-info">
-          <div class="student-name">תמר לוי</div>
-          <div class="student-track" data-en="Hebrew Program · Year 1" data-he="מסלול עברית · שנה א׳">Hebrew Program · Year 1</div>
-          <div class="student-interests">
-            <span class="tag" data-en="Sound Design" data-he="עיצוב קול">Sound Design</span>
-            <span class="tag" data-en="Music" data-he="מוזיקה">Music</span>
-          </div>
-          <div class="student-working"><strong data-en="Available:" data-he="זמינה:">Available:</strong> <span data-en="Sound for projects" data-he="הקלטת סאונד לפרויקטים">Sound for projects</span></div>
-        </div>
-      </div>
-
-      <div class="student-card" data-track="english">
-        <div class="student-photo">🖥️</div>
-        <div class="student-info">
-          <div class="student-name">James Keller</div>
-          <div class="student-track" data-en="English Program · Year 1" data-he="מסלול אנגלית · שנה א׳">English Program · Year 1</div>
-          <div class="student-interests">
-            <span class="tag" data-en="Editing" data-he="עריכה">Editing</span>
-            <span class="tag amber" data-en="VFX" data-he="אפקטים">VFX</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="student-grid" id="studentGrid"></div>
+    <div class="empty-state" id="studentsEmpty" style="display:none;" data-en="No student profiles yet. Sign in under My Profile and build yours to be the first!" data-he="עדיין אין פרופילים של סטודנטים. התחברו תחת ׳הפרופיל שלי׳ ובנו את שלכם כדי להיות הראשונים!">No student profiles yet. Sign in under My Profile and build yours to be the first!</div>
   </div>
 </div>
 
@@ -577,10 +506,10 @@ footer span{color:var(--tan);}
       <span><span data-en="Signed in as" data-he="מחוברים בתור">Signed in as</span> <strong id="authStatusEmail"></strong></span>
       <span class="auth-logout" onclick="signOut()" data-en="Log out" data-he="התנתקות">Log out</span>
     </div>
-    <div class="upload-zone" onclick="document.getElementById('photoInput').click()">
+    <div class="upload-zone" id="photoZone" onclick="document.getElementById('photoInput').click()" ondragover="photoDragOver(event)" ondragleave="photoDragLeave(event)" ondrop="photoDrop(event)">
       <img id="photoPreview" class="photo-preview" alt="">
       <div id="photoPrompt">
-        <p data-en="📷 Upload your photo" data-he="📷 העלו תמונה">📷 Upload your photo</p>
+        <p data-en="📷 Drag a photo here or click to upload" data-he="📷 גררו תמונה לכאן או לחצו להעלאה">📷 Drag a photo here or click to upload</p>
         <span data-en="JPG or PNG · Max 5MB" data-he="JPG או PNG · עד 5MB">JPG or PNG · Max 5MB</span>
       </div>
       <input type="file" id="photoInput" accept="image/png,image/jpeg" style="display:none" onchange="previewPhoto(this)">
@@ -589,45 +518,54 @@ footer span{color:var(--tan);}
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" data-en="First name" data-he="שם פרטי">First name</label>
-        <input type="text" class="form-input" data-placeholder-en="Maya" data-placeholder-he="מאיה" placeholder="Maya">
+        <input type="text" id="pf_first" class="form-input" data-placeholder-en="Your first name" data-placeholder-he="שם פרטי" placeholder="Your first name">
       </div>
       <div class="form-group">
         <label class="form-label" data-en="Last name" data-he="שם משפחה">Last name</label>
-        <input type="text" class="form-input" data-placeholder-en="Goldstein" data-placeholder-he="גולדשטיין" placeholder="Goldstein">
+        <input type="text" id="pf_last" class="form-input" data-placeholder-en="Your last name" data-placeholder-he="שם משפחה" placeholder="Your last name">
       </div>
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Track" data-he="מסלול">Track</label>
-      <select class="form-input">
-        <option data-en="English Program" data-he="מסלול אנגלית">English Program</option>
-        <option data-en="Hebrew Program" data-he="מסלול עברית">Hebrew Program</option>
+      <select id="pf_track" class="form-input">
+        <option value="English Program" data-en="English Program" data-he="מסלול אנגלית">English Program</option>
+        <option value="Hebrew Program" data-en="Hebrew Program" data-he="מסלול עברית">Hebrew Program</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Short bio" data-he="ביוגרפיה קצרה">Short bio</label>
-      <textarea class="form-input" data-placeholder-en="Tell the community who you are and what brought you to HaAruga..." data-placeholder-he="ספרו לקהילה מי אתם ומה הביא אתכם לערוגה..." placeholder="Tell the community who you are and what brought you to HaAruga..."></textarea>
+      <textarea id="pf_bio" class="form-input" data-placeholder-en="Tell the community who you are and what brought you to HaAruga..." data-placeholder-he="ספרו לקהילה מי אתם ומה הביא אתכם לערוגה..." placeholder="Tell the community who you are and what brought you to HaAruga..."></textarea>
     </div>
     <h3 class="form-section-title" data-en="Film interests" data-he="תחומי עניין בקולנוע">Film interests</h3>
     <div class="form-group">
       <label class="form-label" data-en="Roles &amp; genres" data-he="תפקידים וז׳אנרים">Roles &amp; genres</label>
-      <div class="tag-input-area">
-        <span class="tag" data-en="Documentary" data-he="דוקומנטרי">Documentary</span>
-        <span class="tag amber" data-en="Directing" data-he="בימוי">Directing</span>
-        <input type="text" class="tag-input" data-placeholder-en="Add interest and press Enter..." data-placeholder-he="הוסיפו תחום עניין..." placeholder="Add interest and press Enter...">
+      <div class="tag-input-area" id="tagArea" onclick="document.getElementById('tagInput').focus()">
+        <input type="text" class="tag-input" id="tagInput" onkeydown="tagKey(event)" data-placeholder-en="Type an interest and press Enter..." data-placeholder-he="הקלידו תחום עניין ולחצו Enter..." placeholder="Type an interest and press Enter...">
       </div>
+      <span style="font-size:11px;color:var(--text-muted);margin-top:4px;display:inline-block;" data-en="Press Enter to add each one. Click a tag to remove it." data-he="לחצו Enter כדי להוסיף כל אחד. לחצו על תגית כדי להסיר.">Press Enter to add each one. Click a tag to remove it.</span>
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Currently working on" data-he="כרגע עובד/ת על">Currently working on</label>
-      <input type="text" class="form-input" data-placeholder-en="e.g. Short doc about market vendors in Jaffa" data-placeholder-he="למשל: דוקומנטרי קצר על סוחרי השוק ביפו" placeholder="e.g. Short doc about market vendors in Jaffa">
+      <input type="text" id="pf_working" class="form-input" data-placeholder-en="e.g. Short doc about market vendors in Jaffa" data-placeholder-he="למשל: דוקומנטרי קצר על סוחרי השוק ביפו" placeholder="e.g. Short doc about market vendors in Jaffa">
     </div>
-    <h3 class="form-section-title" data-en="Links &amp; work" data-he="קישורים ועבודות">Links &amp; work</h3>
+    <h3 class="form-section-title" data-en="Links &amp; contact" data-he="קישורים וצור קשר">Links &amp; contact</h3>
     <div class="form-group">
       <label class="form-label" data-en="Vimeo / YouTube" data-he="וימאו / יוטיוב">Vimeo / YouTube</label>
-      <input type="url" class="form-input" placeholder="https://vimeo.com/yourname">
+      <input type="url" id="pf_vimeo" class="form-input" placeholder="https://vimeo.com/yourname">
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Personal website" data-he="אתר אישי">Personal website</label>
-      <input type="url" class="form-input" placeholder="https://yourname.com">
+      <input type="url" id="pf_website" class="form-input" placeholder="https://yourname.com">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-en="Instagram handle" data-he="אינסטגרם">Instagram handle</label>
+        <input type="text" id="pf_instagram" class="form-input" placeholder="yourhandle">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-en="WhatsApp number" data-he="מספר וואטסאפ">WhatsApp number</label>
+        <input type="text" id="pf_whatsapp" class="form-input" data-placeholder-en="e.g. 972521234567 (country code, no +)" data-placeholder-he="למשל 972521234567 (קידומת מדינה, בלי +)" placeholder="e.g. 972521234567 (country code, no +)">
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Upload work file" data-he="העלו קובץ עבודה">Upload work file</label>
@@ -645,7 +583,7 @@ footer span{color:var(--tan);}
 </div>
 
 <footer>
-  <p><span>הערוגה · HaAruga Film School</span> — Tel Aviv · <span data-en="Students only · Demo" data-he="לסטודנטים בלבד · דמו">Students only · Demo</span></p>
+  <p><span>הערוגה · HaAruga Film School</span> — Tel Aviv · <span data-en="Students only" data-he="לסטודנטים בלבד">Students only</span></p>
 </footer>
 
 <script>
@@ -664,62 +602,16 @@ if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && window.supabase) {
 let authSession = null;
 // =====================================================================
 
-const profiles = {
-  maya: {
-    name: 'Maya Goldstein',
-    track: { en: 'English Program', he: 'מסלול אנגלית' },
-    avatar: '🎬',
-    contact: { email: 'maya.goldstein@email.com', whatsapp: '972521234567', instagram: 'maya.films' },
-    bio: {
-      en: 'Documentary filmmaker fascinated by stories of displacement, memory, and identity. I came to HaAruga after years in journalism — I want to tell stories that linger.',
-      he: 'יוצרת קולנוע תיעודי, מוקסמת מסיפורים של עקירה, זיכרון וזהות. הגעתי לערוגה אחרי שנים בעיתונאות — אני רוצה לספר סיפורים שנשארים.'
-    },
-    tags: {
-      en: ['Directing','Documentary','Editing','Cinema Verité','Personal Essay Film'],
-      he: ['בימוי','דוקומנטרי','עריכה','סינמה וריטה','סרט מסאי אישי']
-    },
-    work: {
-      en: ['🎞 "Still Here" — Vimeo (2024)', '🎞 "The Market Women" — Vimeo (2023)', '📎 Director\'s Statement PDF'],
-      he: ['🎞 "עדיין כאן" — וימאו (2024)', '🎞 "נשות השוק" — וימאו (2023)', '📎 הצהרת הבמאית PDF']
-    },
-    projects: {
-      en: [
-        { title: '"Borders of Memory"', desc: 'A short documentary following three elderly Tel Aviv residents and their relationship to the neighbourhood they\'ve lived in for 50+ years.', needs: ['Looking for: DOP', 'Sound recordist'] },
-        { title: 'Thesis Short (TBD)', desc: 'Exploring a hybrid narrative/doc format. In development. Open to collaboration.', needs: [] }
-      ],
-      he: [
-        { title: '"גבולות הזיכרון"', desc: 'דוקומנטרי קצר העוקב אחר שלושה תושבים קשישים של תל אביב וקשרם לשכונה בה חיו למעלה מ-50 שנה.', needs: ['מחפשת: צלם', 'מקליט סאונד'] },
-        { title: 'פרויקט גמר (בתכנון)', desc: 'חוקרת פורמט היברידי של נרטיב ודוקומנטרי. בפיתוח. פתוחה לשיתוף פעולה.', needs: [] }
-      ]
-    }
-  },
-  ron: {
-    name: 'רון בן-דוד',
-    track: { en: 'Hebrew Program', he: 'מסלול עברית' },
-    avatar: '📷',
-    contact: { email: 'ron.bendavid@email.com', whatsapp: '972539876543', instagram: 'ron.shoots' },
-    bio: {
-      en: 'Cinematographer and visual artist. I shoot in natural light whenever possible. Available as DOP for short films — reach out.',
-      he: 'צלם ואמן חזותי. אני מצלם באור טבעי בכל פעם שאפשר. זמין כצלם ראשי לסרטים קצרים — פנו אלי.'
-    },
-    tags: {
-      en: ['Cinematography', 'Drama', 'Natural Light', 'Documentary'],
-      he: ['צילום', 'דרמה', 'אור טבעי', 'דוקומנטרי']
-    },
-    work: {
-      en: ['🎞 "Yellow Street" — Vimeo (2024)', '📎 Showreel 2024'],
-      he: ['🎞 "רחוב צהוב" — וימאו (2024)', '📎 שורט ריל 2024']
-    },
-    projects: {
-      en: [{ title: 'Available for projects', desc: 'Looking for directing collaborations. Comfortable with both documentary and fiction.', needs: [] }],
-      he: [{ title: 'זמין לפרויקטים', desc: 'מחפש שיתופי פעולה עם במאים. נוח עם דוקומנטרי וגם עם עלילתי.', needs: [] }]
-    }
-  }
-};
-
 let currentLang = 'en';
 let currentProfileId = null;
+let currentProfileContact = null;   // {email, whatsapp, instagram} for the open profile
+let photoDataUrl = null;            // the chosen profile photo, as a data URL
 const pages = ['home','profile','bulletin','faculty','editProfile'];
+
+// Small helpers
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function val(id){ const e=document.getElementById(id); return e ? e.value.trim() : ''; }
+function setVal(id,v){ const e=document.getElementById(id); if(e && v!=null) e.value=v; }
 
 function showPage(name) {
   pages.forEach(p => {
@@ -731,34 +623,77 @@ function showPage(name) {
   const navMap = ['home','bulletin','faculty','editProfile'];
   document.querySelectorAll('.nav-link').forEach((l,i) => l.classList.toggle('active', navMap[i] === name));
   if (name === 'editProfile') refreshAuthUI(authSession);
+  if (name === 'home') loadDirectory();
   window.scrollTo(0,0);
 }
 
-function showProfile(id) {
-  const p = profiles[id];
-  if (!p) return;
+async function showProfile(id) {
+  if (!sb) return;
+  const { data: p, error } = await sb.from('profiles').select('*').eq('id', id).maybeSingle();
+  if (error || !p) return;
   currentProfileId = id;
-  const l = currentLang;
-  document.getElementById('profileName').textContent = p.name;
-  document.getElementById('profileTrack').textContent = p.track[l];
-  document.getElementById('profileAvatar').textContent = p.avatar;
-  document.getElementById('profileBio').textContent = p.bio[l];
+  currentProfileContact = { email: p.email, whatsapp: p.whatsapp, instagram: p.instagram };
 
-  const tagsEl = document.getElementById('profileTags');
-  tagsEl.innerHTML = p.tags[l].map((t,i) => `<span class="tag${i===0?' amber':''}">${t}</span>`).join('');
+  const name = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || 'Student';
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileTrack').textContent = p.track || '';
+  const av = document.getElementById('profileAvatar');
+  av.innerHTML = p.photo
+    ? `<img src="${esc(p.photo)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+    : '🎬';
+  document.getElementById('profileBio').textContent = p.bio || '';
 
-  const workEl = document.getElementById('profileWork');
-  workEl.innerHTML = p.work[l].map(w => `<div><a style="color:var(--amber);cursor:pointer;">${w}</a></div>`).join('');
+  const tags = p.interests || [];
+  document.getElementById('profileTags').innerHTML = tags.length
+    ? tags.map((t,i) => `<span class="tag${i===0?' amber':''}">${esc(t)}</span>`).join('')
+    : '<span style="color:var(--text-muted);font-size:13px;">—</span>';
 
-  const projEl = document.getElementById('profileProjects');
-  projEl.innerHTML = p.projects[l].map(proj => `
-    <div class="project-card">
-      <h4>${proj.title}</h4>
-      <p>${proj.desc}</p>
-      ${proj.needs.length ? `<div class="project-needs">${proj.needs.map(n=>`<span class="need-tag">${n}</span>`).join('')}</div>` : ''}
-    </div>`).join('');
+  const links = [];
+  if (p.vimeo)   links.push(`<div><a href="${esc(p.vimeo)}" target="_blank" rel="noopener" style="color:var(--amber);">🎞 Vimeo / YouTube ↗</a></div>`);
+  if (p.website) links.push(`<div><a href="${esc(p.website)}" target="_blank" rel="noopener" style="color:var(--amber);">🌐 Website ↗</a></div>`);
+  if (p.instagram) links.push(`<div><a href="https://instagram.com/${esc(p.instagram)}" target="_blank" rel="noopener" style="color:var(--amber);">📷 Instagram ↗</a></div>`);
+  document.getElementById('profileWork').innerHTML = links.length
+    ? links.join('')
+    : '<span style="color:var(--text-muted);font-size:13px;">—</span>';
+
+  document.getElementById('profileProjects').innerHTML = p.working_on
+    ? `<div class="project-card"><h4>${esc(p.working_on)}</h4></div>`
+    : `<span style="color:var(--text-muted);font-size:13px;">${currentLang==='he'?'אין פרויקט נוכחי':'No current project listed'}</span>`;
 
   showPage('profile');
+}
+
+// Load all profiles into the home directory.
+async function loadDirectory() {
+  const grid = document.getElementById('studentGrid');
+  const empty = document.getElementById('studentsEmpty');
+  if (!grid || !empty) return;
+  if (!sb) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  const { data, error } = await sb.from('profiles')
+    .select('id,first_name,last_name,track,interests,working_on,photo')
+    .order('updated_at', { ascending: false });
+  if (error) { return; }
+  if (!data || !data.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = data.map(p => {
+    const name = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || 'Student';
+    const trackKey = (p.track||'').toLowerCase().includes('hebrew') ? 'hebrew' : 'english';
+    const tags = (p.interests||[]).slice(0,3)
+      .map((t,i) => `<span class="tag${i===2?' amber':''}">${esc(t)}</span>`).join('');
+    const photo = p.photo ? `<img src="${esc(p.photo)}" alt="">` : '🎬';
+    const working = p.working_on
+      ? `<div class="student-working"><strong>${currentLang==='he'?'עובד/ת על:':'Working on:'}</strong> ${esc(p.working_on)}</div>`
+      : '';
+    return `<div class="student-card" onclick="showProfile('${esc(p.id)}')" data-track="${trackKey}">
+      <div class="student-photo">${photo}</div>
+      <div class="student-info">
+        <div class="student-name">${esc(name)}</div>
+        <div class="student-track">${esc(p.track||'')}</div>
+        <div class="student-interests">${tags}</div>
+        ${working}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function setLang(lang) {
@@ -822,28 +757,113 @@ function submitPost() {
   document.getElementById('postForm').style.display = 'none';
 }
 
-function saveProfile() {
+async function saveProfile() {
+  if (!sb) { showToast('Not connected to the database.'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
+
+  const row = {
+    id: session.user.id,
+    email: session.user.email,
+    first_name: val('pf_first'),
+    last_name: val('pf_last'),
+    track: val('pf_track'),
+    bio: val('pf_bio'),
+    interests: getTags(),
+    working_on: val('pf_working'),
+    vimeo: val('pf_vimeo'),
+    website: val('pf_website'),
+    instagram: val('pf_instagram').replace(/^@/, ''),
+    whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
+    updated_at: new Date().toISOString()
+  };
+  if (photoDataUrl) row.photo = photoDataUrl;
+
+  const { error } = await sb.from('profiles').upsert(row);
+  if (error) { showToast(error.message); return; }
   showToast(currentLang === 'he' ? 'הפרופיל נשמר! הדף שלך פעיל.' : 'Profile saved! Your page is now live.');
+  loadDirectory();
 }
 
-function previewPhoto(input) {
-  const file = input.files && input.files[0];
-  if (!file) return;
+// Fill the form with the signed-in user's saved profile (if any).
+async function loadMyProfile() {
+  if (!sb) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+  if (!p) return;
+  setVal('pf_first', p.first_name); setVal('pf_last', p.last_name);
+  if (p.track) setVal('pf_track', p.track);
+  setVal('pf_bio', p.bio); setVal('pf_working', p.working_on);
+  setVal('pf_vimeo', p.vimeo); setVal('pf_website', p.website);
+  setVal('pf_instagram', p.instagram); setVal('pf_whatsapp', p.whatsapp);
+  setTags(p.interests || []);
+  if (p.photo) {
+    photoDataUrl = p.photo;
+    const img = document.getElementById('photoPreview');
+    img.src = p.photo; img.classList.add('show');
+    document.getElementById('photoPrompt').innerHTML =
+      currentLang === 'he' ? '<p>✓ תמונה — לחצו להחלפה</p>' : '<p>✓ Photo — click to change</p>';
+  }
+}
+
+// ----- Profile photo (click or drag-and-drop) -----
+function previewPhoto(input) { const f = input.files && input.files[0]; if (f) handlePhotoFile(f); }
+function handlePhotoFile(file) {
+  if (!file.type || !file.type.startsWith('image/')) {
+    showToast(currentLang === 'he' ? 'קובצי תמונה בלבד' : 'Please choose an image file.'); return;
+  }
   if (file.size > 5 * 1024 * 1024) {
-    showToast(currentLang === 'he' ? 'הקובץ גדול מ-5MB' : 'File is larger than 5MB');
-    input.value = '';
-    return;
+    showToast(currentLang === 'he' ? 'הקובץ גדול מ-5MB' : 'File is larger than 5MB'); return;
   }
   const reader = new FileReader();
   reader.onload = e => {
+    photoDataUrl = e.target.result;
     const img = document.getElementById('photoPreview');
-    img.src = e.target.result;
-    img.classList.add('show');
+    img.src = photoDataUrl; img.classList.add('show');
     document.getElementById('photoPrompt').innerHTML =
       currentLang === 'he' ? '<p>✓ התמונה נבחרה — לחצו להחלפה</p>' : '<p>✓ Photo selected — click to change</p>';
-    // `e.target.result` holds the image as a data URL, ready to save with the profile.
   };
   reader.readAsDataURL(file);
+}
+function photoDragOver(e) { e.preventDefault(); document.getElementById('photoZone').classList.add('dragover'); }
+function photoDragLeave(e) { document.getElementById('photoZone').classList.remove('dragover'); }
+function photoDrop(e) {
+  e.preventDefault();
+  document.getElementById('photoZone').classList.remove('dragover');
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) handlePhotoFile(f);
+}
+
+// ----- Interest tags (type + Enter to add, click to remove) -----
+function tagKey(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const v = e.target.value.trim();
+    if (v) { addTagChip(v); e.target.value = ''; }
+  } else if (e.key === 'Backspace' && !e.target.value) {
+    const chips = document.querySelectorAll('#tagArea .tag');
+    if (chips.length) chips[chips.length - 1].remove();
+  }
+}
+function addTagChip(text) {
+  const input = document.getElementById('tagInput');
+  const chip = document.createElement('span');
+  chip.className = 'tag removable';
+  chip.textContent = text;
+  const x = document.createElement('span');
+  x.className = 'tag-x'; x.textContent = '×';
+  chip.appendChild(x);
+  chip.onclick = () => chip.remove();
+  input.parentNode.insertBefore(chip, input);
+}
+function getTags() {
+  return Array.from(document.querySelectorAll('#tagArea .tag'))
+    .map(c => c.textContent.replace(/×\s*$/, '').trim()).filter(Boolean);
+}
+function setTags(arr) {
+  document.querySelectorAll('#tagArea .tag').forEach(c => c.remove());
+  (arr || []).forEach(t => addTagChip(t));
 }
 
 function previewWorkFile(input) {
@@ -889,6 +909,7 @@ function refreshAuthUI(session) {
     form.style.display = 'block';
     status.style.display = 'flex';
     document.getElementById('authStatusEmail').textContent = session.user.email;
+    loadMyProfile();
   } else {
     gate.style.display = 'block';
     form.style.display = 'none';
@@ -921,12 +942,15 @@ async function signOut() {
 }
 
 function openContactModal() {
-  const p = profiles[currentProfileId];
-  if (!p || !p.contact) return;
+  const c = currentProfileContact;
+  if (!c || (!c.email && !c.whatsapp && !c.instagram)) {
+    showToast(currentLang === 'he' ? 'אין פרטי קשר זמינים' : 'No contact details provided.');
+    return;
+  }
   const l = currentLang;
-  const c = p.contact;
+  const name = document.getElementById('profileName').textContent;
   document.getElementById('contactModalName').textContent =
-    (l === 'he' ? 'צרו קשר עם ' : 'Contact ') + p.name;
+    (l === 'he' ? 'צרו קשר עם ' : 'Contact ') + name;
 
   const opts = [];
   if (c.email) {
@@ -973,6 +997,9 @@ if (sb) {
 } else {
   refreshAuthUI(null);
 }
+
+// Load the student directory on first load.
+loadDirectory();
 </script>
 </body>
 </html>
