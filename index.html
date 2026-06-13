@@ -164,8 +164,13 @@ textarea.form-input{min-height:100px;resize:vertical;}
 .gallery-item{position:relative;aspect-ratio:1;border-radius:5px;overflow:hidden;border:1px solid var(--border);background:var(--warm-cream);display:block;}
 .gallery-item img,.gallery-item video{width:100%;height:100%;object-fit:cover;display:block;}
 .gallery-item.uploading{display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);text-align:center;}
-.gallery-remove{position:absolute;top:5px;right:5px;background:rgba(26,26,23,.72);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;}
+.gallery-remove{position:absolute;top:5px;right:5px;background:rgba(26,26,23,.72);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;line-height:1;z-index:2;}
 .gallery-remove:hover{background:var(--red);}
+.gallery-item iframe{width:100%;height:100%;border:0;display:block;}
+.gallery-item.media-wide{grid-column:1 / -1;aspect-ratio:16 / 9;}
+.gallery-link-card{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;text-align:center;text-decoration:none;}
+.gl-icon{font-size:1.7rem;}
+.gl-host{font-size:10px;color:var(--text-muted);word-break:break-all;line-height:1.25;}
 .auth-gate{max-width:480px;margin:2.5rem auto;padding:0 2rem;}
 .auth-card{background:white;border:1px solid var(--border);border-radius:6px;padding:2rem;text-align:center;border-top:3px solid var(--red);}
 .auth-card h3{font-family:'Playfair Display',serif;font-weight:400;font-size:1.4rem;margin-bottom:8px;}
@@ -557,10 +562,6 @@ footer span{color:var(--tan);}
     </div>
     <h3 class="form-section-title" data-en="Links &amp; contact" data-he="קישורים וצור קשר">Links &amp; contact</h3>
     <div class="form-group">
-      <label class="form-label" data-en="Vimeo / YouTube" data-he="וימאו / יוטיוב">Vimeo / YouTube</label>
-      <input type="url" id="pf_vimeo" class="form-input" placeholder="https://vimeo.com/yourname">
-    </div>
-    <div class="form-group">
       <label class="form-label" data-en="Personal website" data-he="אתר אישי">Personal website</label>
       <input type="url" id="pf_website" class="form-input" placeholder="https://yourname.com">
     </div>
@@ -581,6 +582,10 @@ footer span{color:var(--tan);}
         <p data-en="🎞 Drag photos or videos here, or click to upload" data-he="🎞 גררו תמונות או סרטונים לכאן, או לחצו להעלאה">🎞 Drag photos or videos here, or click to upload</p>
         <span data-en="JPG, PNG, MP4, MOV · Max 50MB each · add several" data-he="JPG, PNG, MP4, MOV · עד 50MB לכל אחד · אפשר כמה">JPG, PNG, MP4, MOV · Max 50MB each · add several</span>
         <input type="file" id="galleryInput" accept="image/*,video/*" multiple style="display:none" onchange="galleryPick(this)">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <input type="url" id="galleryLinkInput" class="form-input" style="flex:1;min-width:200px;" onkeydown="galleryLinkKey(event)" data-placeholder-en="Or paste a Vimeo / YouTube / project link" data-placeholder-he="או הדביקו קישור וימאו / יוטיוב / פרויקט" placeholder="Or paste a Vimeo / YouTube / project link">
+        <button type="button" class="btn-outline" style="flex-shrink:0;" onclick="addGalleryLink()" data-en="Add link" data-he="הוסיפו קישור">Add link</button>
       </div>
       <div class="gallery-grid" id="galleryPreview" style="margin-top:12px;"></div>
     </div>
@@ -661,7 +666,6 @@ async function showProfile(id) {
     : '<span style="color:var(--text-muted);font-size:13px;">—</span>';
 
   const links = [];
-  if (p.vimeo)   links.push(`<div><a href="${esc(p.vimeo)}" target="_blank" rel="noopener" style="color:var(--amber);">🎞 Vimeo / YouTube ↗</a></div>`);
   if (p.website) links.push(`<div><a href="${esc(p.website)}" target="_blank" rel="noopener" style="color:var(--amber);">🌐 Website ↗</a></div>`);
   if (p.instagram) links.push(`<div><a href="https://instagram.com/${esc(p.instagram)}" target="_blank" rel="noopener" style="color:var(--amber);">📷 Instagram ↗</a></div>`);
   document.getElementById('profileWork').innerHTML = links.length
@@ -677,10 +681,7 @@ async function showProfile(id) {
   const galEl = document.getElementById('profileGallery');
   if (gal.length) {
     galWrap.style.display = 'block';
-    galEl.innerHTML = gal.map(u => isVideoUrl(u)
-      ? `<div class="gallery-item"><video src="${esc(u)}" controls></video></div>`
-      : `<a class="gallery-item" href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt=""></a>`
-    ).join('');
+    galEl.innerHTML = gal.map(u => galleryDisplayHtml(u)).join('');
   } else {
     galWrap.style.display = 'none';
     galEl.innerHTML = '';
@@ -797,7 +798,6 @@ async function saveProfile() {
     bio: val('pf_bio'),
     interests: getTags(),
     working_on: val('pf_working'),
-    vimeo: val('pf_vimeo'),
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
@@ -822,7 +822,7 @@ async function loadMyProfile() {
   setVal('pf_first', p.first_name); setVal('pf_last', p.last_name);
   if (p.track) setVal('pf_track', p.track);
   setVal('pf_bio', p.bio); setVal('pf_working', p.working_on);
-  setVal('pf_vimeo', p.vimeo); setVal('pf_website', p.website);
+  setVal('pf_website', p.website);
   setVal('pf_instagram', p.instagram); setVal('pf_whatsapp', p.whatsapp);
   setTags(p.interests || []);
   galleryUrls = p.gallery || [];
@@ -914,7 +914,6 @@ async function handleGalleryFiles(files) {
       showToast((file.name || 'File') + ': ' + (currentLang === 'he' ? 'גדול מ-50MB' : 'larger than 50MB'));
       continue;
     }
-    const isVideo = (file.type || '').startsWith('video/');
     const tile = document.createElement('div');
     tile.className = 'gallery-item uploading';
     tile.textContent = currentLang === 'he' ? 'מעלה…' : 'Uploading…';
@@ -926,16 +925,46 @@ async function handleGalleryFiles(files) {
     if (error) { tile.classList.remove('uploading'); tile.textContent = '⚠'; showToast(error.message); continue; }
     const { data: { publicUrl } } = sb.storage.from('gallery').getPublicUrl(path);
     galleryUrls.push(publicUrl);
-    renderGalleryTile(tile, publicUrl, isVideo);
+    renderGalleryTile(tile, publicUrl);
   }
 }
 
-function renderGalleryTile(tile, url, isVideo) {
+// Add a pasted link (Vimeo / YouTube / any project URL) to the gallery.
+function galleryLinkKey(e) { if (e.key === 'Enter') { e.preventDefault(); addGalleryLink(); } }
+function addGalleryLink() {
+  const input = document.getElementById('galleryLinkInput');
+  let url = input.value.trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  galleryUrls.push(url);
+  const tile = document.createElement('div');
   tile.className = 'gallery-item';
-  tile.innerHTML = (isVideo
-    ? `<video src="${esc(url)}" muted></video>`
-    : `<img src="${esc(url)}" alt="">`)
-    + `<span class="gallery-remove" title="Remove">×</span>`;
+  document.getElementById('galleryPreview').appendChild(tile);
+  renderGalleryTile(tile, url);
+  input.value = '';
+}
+
+// What kind of thing is this URL?
+function galleryKind(u) {
+  if (/youtube\.com|youtu\.be/i.test(u)) return 'youtube';
+  if (/vimeo\.com/i.test(u)) return 'vimeo';
+  if (isVideoUrl(u)) return 'video';
+  if (/\.(jpe?g|png|gif|webp|avif|bmp|svg)(\?|$)/i.test(u)) return 'image';
+  return 'link';
+}
+function ytId(u) { const m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/i); return m ? m[1] : ''; }
+function vimeoId(u) { const m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i); return m ? m[1] : ''; }
+function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } }
+
+// Editor thumbnail (with a remove ×).
+function renderGalleryTile(tile, url) {
+  tile.className = 'gallery-item';
+  const kind = galleryKind(url);
+  let inner;
+  if (kind === 'image') inner = `<img src="${esc(url)}" alt="">`;
+  else if (kind === 'video') inner = `<video src="${esc(url)}" muted></video>`;
+  else inner = `<div class="gallery-link-card"><div class="gl-icon">${kind === 'link' ? '🔗' : '▶'}</div><div class="gl-host">${esc(hostOf(url))}</div></div>`;
+  tile.innerHTML = inner + `<span class="gallery-remove" title="Remove">×</span>`;
   tile.querySelector('.gallery-remove').onclick = (ev) => {
     ev.stopPropagation();
     galleryUrls = galleryUrls.filter(u => u !== url);
@@ -951,8 +980,21 @@ function renderMyGallery() {
     const tile = document.createElement('div');
     tile.className = 'gallery-item';
     wrap.appendChild(tile);
-    renderGalleryTile(tile, url, isVideoUrl(url));
+    renderGalleryTile(tile, url);
   });
+}
+
+// Public profile display (images open full-size, videos & YouTube/Vimeo play inline, links become cards).
+function galleryDisplayHtml(u) {
+  const kind = galleryKind(u);
+  if (kind === 'image') return `<a class="gallery-item" href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt=""></a>`;
+  if (kind === 'video') return `<div class="gallery-item media-wide"><video src="${esc(u)}" controls></video></div>`;
+  if (kind === 'youtube') { const id = ytId(u); return id ? `<div class="gallery-item media-wide"><iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe></div>` : galleryLinkCard(u); }
+  if (kind === 'vimeo') { const id = vimeoId(u); return id ? `<div class="gallery-item media-wide"><iframe src="https://player.vimeo.com/video/${id}" allowfullscreen></iframe></div>` : galleryLinkCard(u); }
+  return galleryLinkCard(u);
+}
+function galleryLinkCard(u) {
+  return `<a class="gallery-item" href="${esc(u)}" target="_blank" rel="noopener"><div class="gallery-link-card"><div class="gl-icon">🔗</div><div class="gl-host">${esc(hostOf(u))}</div></div></a>`;
 }
 
 function previewWorkFile(input) {
