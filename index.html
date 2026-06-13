@@ -609,7 +609,7 @@ footer span{color:var(--tan);}
     </div>
     <div style="display:flex;gap:10px;margin-top:2rem;padding-bottom:3rem;flex-wrap:wrap;">
       <button class="btn-primary" onclick="saveProfile()" data-en="Save profile" data-he="שמרו פרופיל">Save profile</button>
-      <button class="btn-outline" data-en="Preview" data-he="תצוגה מקדימה">Preview</button>
+      <button class="btn-outline" onclick="previewProfile()" data-en="Preview" data-he="תצוגה מקדימה">Preview</button>
     </div>
   </div>
 </div>
@@ -662,11 +662,7 @@ function showPage(name) {
   window.scrollTo(0,0);
 }
 
-async function showProfile(id) {
-  if (!sb) return;
-  const { data: p, error } = await sb.from('profiles').select('*').eq('id', id).maybeSingle();
-  if (error || !p) return;
-  currentProfileId = id;
+function renderProfilePage(p) {
   currentProfileContact = { email: p.email, whatsapp: p.whatsapp, instagram: p.instagram };
 
   const name = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || 'Student';
@@ -704,8 +700,37 @@ async function showProfile(id) {
     galWrap.style.display = 'none';
     galEl.innerHTML = '';
   }
+}
 
+async function showProfile(id) {
+  if (!sb) return;
+  const { data: p, error } = await sb.from('profiles').select('*').eq('id', id).maybeSingle();
+  if (error || !p) return;
+  currentProfileId = id;
+  renderProfilePage(p);
   showPage('profile');
+}
+
+// Preview the profile from the current (possibly unsaved) form values.
+function previewProfile() {
+  const p = {
+    first_name: val('pf_first'),
+    last_name: val('pf_last'),
+    track: val('pf_track'),
+    bio: val('pf_bio'),
+    interests: getTags(),
+    working_on: val('pf_working'),
+    website: val('pf_website'),
+    instagram: val('pf_instagram').replace(/^@/, ''),
+    whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
+    photo: photoDataUrl,
+    gallery: galleryUrls,
+    email: (authSession && authSession.user) ? authSession.user.email : ''
+  };
+  currentProfileId = null;
+  renderProfilePage(p);
+  showPage('profile');
+  showToast(currentLang === 'he' ? 'תצוגה מקדימה — עדיין לא נשמר' : 'Preview — not saved yet');
 }
 
 // Load all profiles into the home directory.
