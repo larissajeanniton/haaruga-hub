@@ -125,7 +125,8 @@ body.he .profile-section h3{font-family:'Frank Ruhl Libre',serif;}
 .bulletin-needs{display:flex;flex-wrap:wrap;gap:4px;}
 .faculty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;}
 .faculty-card{background:white;border:1px solid var(--border);border-radius:4px;padding:1.5rem;display:flex;gap:1rem;align-items:flex-start;}
-.faculty-avatar{width:56px;height:56px;border-radius:50%;background:var(--warm-cream);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:500;color:var(--sage-light);flex-shrink:0;}
+.faculty-avatar{width:56px;height:56px;border-radius:50%;background:var(--warm-cream);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:500;color:var(--sage-light);flex-shrink:0;position:relative;overflow:hidden;}
+.faculty-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .faculty-info h4{font-size:15px;font-weight:500;margin-bottom:2px;}
 .faculty-info .role{font-size:11px;color:var(--sage);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;}
 .faculty-info .bio{font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:8px;}
@@ -425,86 +426,86 @@ footer span{color:var(--tan);}
     <div class="section-header"><h2 class="section-title" data-en="Our lecturers" data-he="המרצים שלנו">Our lecturers</h2></div>
     <div class="faculty-grid">
       <div class="faculty-card">
-        <div class="faculty-avatar">OR</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/23b88e_fe54a4a6ebea4badb4b938e87cb1b0ab~mv2.jpg" alt="" onerror="this.style.display='none'">OR</div>
         <div class="faculty-info">
-          <h4>Orit Fouks Rotem</h4>
+          <h4 data-en="Orit Fouks Rotem" data-he="אורית פוקס רותם">Orit Fouks Rotem</h4>
           <div class="role" data-en="Directing" data-he="בימוי">Directing</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">BD</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/23b88e_863ced8c759342fdad84009ec7f7b6a4~mv2.jpg" alt="" onerror="this.style.display='none'">BD</div>
         <div class="faculty-info">
-          <h4>Boaz Debby</h4>
+          <h4 data-en="Boaz Debby" data-he="בועז דבי">Boaz Debby</h4>
           <div class="role" data-en="Program Director &amp; Screenwriting" data-he="מנהל התוכנית וכתיבת תסריט">Program Director &amp; Screenwriting</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">BF</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_138d3b1fd2d04a97a9d24122017194ab~mv2.png" alt="" onerror="this.style.display='none'">BF</div>
         <div class="faculty-info">
-          <h4>Benjamin Freidenberg</h4>
+          <h4 data-en="Benjamin Freidenberg" data-he="בנימין פרידנברג">Benjamin Freidenberg</h4>
           <div class="role" data-en="Directing" data-he="בימוי">Directing</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">MB</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_768bd0e6cc1d45e58509cebf3548fdbf~mv2.png" alt="" onerror="this.style.display='none'">MB</div>
         <div class="faculty-info">
-          <h4>Miki Kohn Barlev</h4>
+          <h4 data-en="Miki Kohn Barlev" data-he="מיקי כהן ברלב">Miki Kohn Barlev</h4>
           <div class="role" data-en="Editing" data-he="עריכה">Editing</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">ZL</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_86adb560a80d4cc38c739551a2f6dfba~mv2.jpg" alt="" onerror="this.style.display='none'">ZL</div>
         <div class="faculty-info">
-          <h4>Zvi Landsman</h4>
+          <h4 data-en="Zvi Landsman" data-he="צבי לנדסמן">Zvi Landsman</h4>
           <div class="role" data-en="Cinematography" data-he="צילום">Cinematography</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">NH</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_ff5713fc73ae4d558f348ad824cfea6c~mv2.jpg" alt="" onerror="this.style.display='none'">NH</div>
         <div class="faculty-info">
-          <h4>Nohar Avigail Haseen</h4>
+          <h4 data-en="Nohar Avigail Haseen" data-he="נוהר אביגיל חסין">Nohar Avigail Haseen</h4>
           <div class="role" data-en="Editing" data-he="עריכה">Editing</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">GS</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/23b88e_dc50b446cda141dd8a88515569579515~mv2.jpg" alt="" onerror="this.style.display='none'">GS</div>
         <div class="faculty-info">
-          <h4>Guy Sahaf</h4>
+          <h4 data-en="Guy Sahaf" data-he="גיא סחף">Guy Sahaf</h4>
           <div class="role" data-en="Cinematography" data-he="צילום">Cinematography</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">DN</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_e2c5d3cbfc964bf3824e2011d848be3c~mv2.jpeg" alt="" onerror="this.style.display='none'">DN</div>
         <div class="faculty-info">
-          <h4>Daniella Nowitz</h4>
+          <h4 data-en="Daniella Nowitz" data-he="דניאלה נוביץ">Daniella Nowitz</h4>
           <div class="role" data-en="Cinematography" data-he="צילום">Cinematography</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">EG</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_b3945cd1e3694c77875f787185a29370~mv2.jpg" alt="" onerror="this.style.display='none'">EG</div>
         <div class="faculty-info">
-          <h4>Evgeny Gusyatinskiy</h4>
+          <h4 data-en="Evgeny Gusyatinskiy" data-he="יבגני גוסיאטינסקי">Evgeny Gusyatinskiy</h4>
           <div class="role" data-en="World Cinema &amp; Film Aesthetics" data-he="קולנוע עולמי ואסתטיקה של הסרט">World Cinema &amp; Film Aesthetics</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">YF</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_975f8b5833084a6caa9a49139ddec8e8~mv2.jpg" alt="" onerror="this.style.display='none'">YF</div>
         <div class="faculty-info">
-          <h4>Yaeli Feldman</h4>
+          <h4 data-en="Yaeli Feldman" data-he="יעלי פלדמן">Yaeli Feldman</h4>
           <div class="role" data-en="Screenwriting" data-he="כתיבת תסריט">Screenwriting</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">MA</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_67bd42eb09264147b58608b2dc4334f1~mv2.jpg" alt="" onerror="this.style.display='none'">MA</div>
         <div class="faculty-info">
-          <h4>Michael Alalu</h4>
+          <h4 data-en="Michael Alalu" data-he="מיכאל אללו">Michael Alalu</h4>
           <div class="role" data-en="Screenwriting" data-he="כתיבת תסריט">Screenwriting</div>
         </div>
       </div>
       <div class="faculty-card">
-        <div class="faculty-avatar">KB</div>
+        <div class="faculty-avatar"><img src="https://static.wixstatic.com/media/193645_b3648536ba5e482b983256ef5775c84b~mv2.jpg" alt="" onerror="this.style.display='none'">KB</div>
         <div class="faculty-info">
-          <h4>Keren Bergman</h4>
+          <h4 data-en="Keren Bergman" data-he="קרן ברגמן">Keren Bergman</h4>
           <div class="role" data-en="Cinematography" data-he="צילום">Cinematography</div>
         </div>
       </div>
