@@ -311,7 +311,7 @@ footer span{color:var(--tan);}
       <button class="btn-primary" onclick="togglePostForm()" style="font-size:12px;padding:8px 18px;" data-en="+ New post" data-he="+ פרסום חדש">+ New post</button>
     </div>
 
-    <div class="bulletin-grid">
+    <div class="bulletin-grid" id="bulletinGrid">
       <div class="bulletin-card">
         <div class="bulletin-type">
           <div class="bulletin-icon screening">🎥</div>
@@ -379,21 +379,21 @@ footer span{color:var(--tan);}
       <h3 style="font-family:'Playfair Display',serif;font-weight:400;font-size:1.2rem;margin-bottom:1.25rem;" data-en="New bulletin post" data-he="פרסום חדש בלוח">New bulletin post</h3>
       <div style="margin-bottom:1rem;">
         <label class="form-label" data-en="Type" data-he="סוג">Type</label>
-        <select class="form-input" style="max-width:300px;">
-          <option data-en="Screening / Work-in-progress" data-he="הקרנה / גרסת עבודה">Screening / Work-in-progress</option>
-          <option data-en="Crew needed" data-he="דרוש צוות">Crew needed</option>
-          <option data-en="Cast needed" data-he="דרושים שחקנים">Cast needed</option>
-          <option data-en="Space / Equipment available" data-he="מקום / ציוד זמין">Space / Equipment available</option>
-          <option data-en="Other" data-he="אחר">Other</option>
+        <select id="post_type" class="form-input" style="max-width:300px;">
+          <option value="screening" data-en="Screening / Work-in-progress" data-he="הקרנה / גרסת עבודה">Screening / Work-in-progress</option>
+          <option value="crew" data-en="Crew needed" data-he="דרוש צוות">Crew needed</option>
+          <option value="cast" data-en="Cast needed" data-he="דרושים שחקנים">Cast needed</option>
+          <option value="space" data-en="Space / Equipment available" data-he="מקום / ציוד זמין">Space / Equipment available</option>
+          <option value="other" data-en="Other" data-he="אחר">Other</option>
         </select>
       </div>
       <div style="margin-bottom:1rem;">
         <label class="form-label" data-en="Title" data-he="כותרת">Title</label>
-        <input class="form-input" type="text" data-placeholder-en="e.g. DOP needed — 1-day shoot Jaffa" data-placeholder-he="למשל: דרוש צלם — יום צילום ביפו" placeholder="e.g. DOP needed — 1-day shoot Jaffa">
+        <input id="post_title" class="form-input" type="text" data-placeholder-en="e.g. DOP needed — 1-day shoot Jaffa" data-placeholder-he="למשל: דרוש צלם — יום צילום ביפו" placeholder="e.g. DOP needed — 1-day shoot Jaffa">
       </div>
       <div style="margin-bottom:1rem;">
         <label class="form-label" data-en="Details" data-he="פרטים">Details</label>
-        <textarea class="form-input" data-placeholder-en="Describe what you need, when, where, and any conditions..." data-placeholder-he="תארו מה אתם צריכים, מתי, היכן, ותנאים..." placeholder="Describe what you need, when, where, and any conditions..."></textarea>
+        <textarea id="post_details" class="form-input" data-placeholder-en="Describe what you need, when, where, and any conditions..." data-placeholder-he="תארו מה אתם צריכים, מתי, היכן, ותנאים..." placeholder="Describe what you need, when, where, and any conditions..."></textarea>
       </div>
       <div style="display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap;">
         <button class="btn-primary" onclick="submitPost()" data-en="Post to bulletin" data-he="פרסמו ללוח">Post to bulletin</button>
@@ -660,6 +660,7 @@ function showPage(name) {
   document.querySelectorAll('.nav-link').forEach((l,i) => l.classList.toggle('active', navMap[i] === name));
   if (name === 'editProfile') refreshAuthUI(authSession);
   if (name === 'home') loadDirectory();
+  if (name === 'bulletin') loadPosts();
   window.scrollTo(0,0);
 }
 
@@ -826,12 +827,83 @@ function filterTrack(val) {
 
 function togglePostForm() {
   const f = document.getElementById('postForm');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  const showing = f.style.display === 'none';
+  f.style.display = showing ? 'block' : 'none';
+  if (showing) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-function submitPost() {
-  showToast(currentLang === 'he' ? 'הפרסום נשלח! יופיע בעדכון הדו-שבועי הבא.' : 'Post submitted! It will appear in the next bi-weekly digest.');
+const POST_TYPES = {
+  screening: { icon: '🎥', cls: 'screening', en: 'Screening', he: 'הקרנה' },
+  crew:      { icon: '🎬', cls: 'crew',      en: 'Crew Needed', he: 'דרוש צוות' },
+  cast:      { icon: '🎭', cls: 'crew',      en: 'Cast Needed', he: 'דרושים שחקנים' },
+  space:     { icon: '🏠', cls: 'space',     en: 'Resource', he: 'משאב' },
+  other:     { icon: '📌', cls: 'space',     en: 'Notice', he: 'הודעה' }
+};
+
+async function submitPost() {
+  if (!sb) { showToast('Not connected to the database.'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    showToast(currentLang === 'he' ? 'התחברו (הפרופיל שלי) כדי לפרסם' : 'Please sign in (My Profile) to post.');
+    return;
+  }
+  const title = val('post_title');
+  if (!title) { showToast(currentLang === 'he' ? 'הוסיפו כותרת' : 'Please add a title.'); return; }
+
+  // Pull the author's name + track from their profile
+  let author_name = session.user.email, track = '';
+  const { data: prof } = await sb.from('profiles').select('first_name,last_name,track').eq('id', session.user.id).maybeSingle();
+  if (prof) {
+    author_name = ((prof.first_name||'') + ' ' + (prof.last_name||'')).trim() || session.user.email;
+    track = prof.track || '';
+  }
+
+  const { error } = await sb.from('posts').insert({
+    author_id: session.user.id,
+    author_name, track,
+    type: document.getElementById('post_type').value,
+    title,
+    details: val('post_details')
+  });
+  if (error) { showToast(error.message); return; }
+
+  showToast(currentLang === 'he' ? 'הפרסום פורסם!' : 'Posted to the bulletin!');
   document.getElementById('postForm').style.display = 'none';
+  document.getElementById('post_title').value = '';
+  document.getElementById('post_details').value = '';
+  loadPosts();
+}
+
+function bulletinCardHtml(p) {
+  const t = POST_TYPES[p.type] || POST_TYPES.other;
+  const label = currentLang === 'he' ? t.he : t.en;
+  const date = (p.created_at || '').slice(0, 10);
+  const meta = date + (p.track ? ' · ' + p.track : '');
+  return `<div class="bulletin-card dynamic-post">
+    <div class="bulletin-type">
+      <div class="bulletin-icon ${t.cls}">${t.icon}</div>
+      <div class="bulletin-type-label">${esc(label)}</div>
+    </div>
+    <div class="bulletin-content">
+      <h4>${esc(p.title || '')}</h4>
+      <p>${esc(p.details || '')}</p>
+      <div class="bulletin-meta">
+        <span class="bulletin-author">${esc(p.author_name || '')}</span>
+        <span class="bulletin-date">${esc(meta)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Load real posts and show them at the top of the bulletin (above the demo examples).
+async function loadPosts() {
+  if (!sb) return;
+  const grid = document.getElementById('bulletinGrid');
+  if (!grid) return;
+  grid.querySelectorAll('.dynamic-post').forEach(el => el.remove());
+  const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
+  if (error || !data || !data.length) return;
+  grid.insertAdjacentHTML('afterbegin', data.map(p => bulletinCardHtml(p)).join(''));
 }
 
 async function saveProfile() {
@@ -1179,8 +1251,9 @@ if (sb) {
   refreshAuthUI(null);
 }
 
-// Load the student directory on first load.
+// Load the student directory and bulletin posts on first load.
 loadDirectory();
+loadPosts();
 
 // Use the HaAruga logo as the browser tab icon (favicon).
 (function () {
