@@ -186,6 +186,21 @@ body.he .auth-card h3{font-family:'Frank Ruhl Libre',serif;}
 .auth-logout{color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:12px;}
 .tag-input-area{display:flex;flex-wrap:wrap;gap:6px;border:1px solid var(--border);border-radius:3px;padding:8px;min-height:42px;background:white;}
 .tag-input{border:none;outline:none;font-size:13px;font-family:inherit;color:var(--text);min-width:120px;flex:1;}
+.interest-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.interest-chip{font-size:12px;padding:6px 13px;border-radius:3px;border:1px solid var(--border);background:white;color:var(--text);cursor:pointer;font-family:inherit;transition:all .15s;}
+.interest-chip:hover{border-color:var(--sage-light);}
+.interest-chip.selected{background:var(--sage);color:white;border-color:var(--sage);}
+.interest-filter{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:1.5rem;}
+.filter-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.filter-chip{font-size:11px;padding:5px 12px;border-radius:3px;border:1px solid var(--border);background:white;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .15s;}
+.filter-chip:hover{border-color:var(--sage-light);}
+.filter-chip.selected{background:var(--red);color:white;border-color:var(--red);}
+.filter-clear{font-size:11px;color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.dir-status{font-size:12px;color:var(--text-muted);margin-bottom:1rem;min-height:1em;}
+.bulletin-actions{display:flex;gap:10px;margin-top:8px;}
+.bulletin-action{font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:none;font-family:inherit;padding:0;}
+.bulletin-action.edit{color:var(--sage);}
+.bulletin-action.delete{color:var(--red);}
 .form-section-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;margin:2rem 0 1rem;padding-top:1.5rem;border-top:1px solid var(--border);}
 body.he .form-section-title{font-family:'Frank Ruhl Libre',serif;}
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--sage);cursor:pointer;padding:1rem 2rem;border-bottom:1px solid var(--border);}
@@ -196,6 +211,23 @@ footer{background:var(--warm-black);padding:2rem;text-align:center;margin-top:4r
 footer p{font-size:11px;color:#555;}
 footer span{color:var(--tan);}
 @media(max-width:700px){.nav-link{padding:0 8px;font-size:10px;}.hero h1{font-size:2rem;}}
+/* Profile detail: key info beside the photo, bio after */
+.profile-main{flex:1;min-width:260px;}
+.profile-quickfacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.25rem 2rem;margin:1.5rem 0;}
+.profile-about{margin-top:1.5rem;}
+.profile-about .profile-bio{margin-bottom:0;}
+/* Mobile: wrap the top nav so nothing gets cut off, and show student cards 2-up */
+@media(max-width:640px){
+  nav{height:auto;flex-wrap:wrap;padding:8px 1rem;row-gap:4px;}
+  .nav-logo{order:1;}
+  .nav-lang{order:2;margin-left:auto;}
+  body.he .nav-lang{margin-left:0;margin-right:auto;}
+  .nav-links{order:3;width:100%;justify-content:space-between;flex-wrap:wrap;}
+  .nav-link{height:40px;padding:0 6px;font-size:10px;letter-spacing:.3px;}
+  .student-grid{grid-template-columns:repeat(2,1fr);gap:1rem;}
+  .student-photo{font-size:2rem;}
+  .profile-quickfacts{grid-template-columns:1fr;gap:1.25rem;}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -230,6 +262,18 @@ footer span{color:var(--tan);}
   </div>
 </div>
 
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="modal-overlay" onclick="closeConfirm(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p class="modal-sub" id="confirmMsg"></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-primary" id="confirmOk" onclick="confirmYes()">Confirm</button>
+      <button class="btn-outline" onclick="closeConfirm()" data-en="Cancel" data-he="ביטול">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- HOME PAGE -->
 <div id="page-home" class="page active">
   <div class="hero">
@@ -237,7 +281,7 @@ footer span{color:var(--tan);}
     <h1 data-en="Where <em>filmmakers</em><br>find each other" data-he="המקום שבו <em>יוצרי קולנוע</em><br>מוצאים אחד את השני">Where <em>filmmakers</em><br>find each other</h1>
     <p class="hero-sub" data-en="Connect with classmates, discover projects, find collaborators, and share your work with the HaAruga community." data-he="התחברו עם חברים לכיתה, גלו פרויקטים, מצאו שותפים ליצירה, ושתפו את העבודות שלכם עם קהילת הערוגה.">Connect with classmates, discover projects, find collaborators, and share your work with the HaAruga community.</p>
     <div class="hero-actions">
-      <button class="btn-primary" onclick="showPage('editProfile')" data-en="Build Your Profile" data-he="בנו את הפרופיל שלכם">Build Your Profile</button>
+      <button id="heroProfileBtn" class="btn-primary" onclick="showPage('editProfile')" data-en="Build Your Profile" data-he="בנו את הפרופיל שלכם">Build Your Profile</button>
       <button class="btn-outline" onclick="showPage('bulletin')" data-en="Browse the Bulletin" data-he="לוח המודעות">Browse the Bulletin</button>
     </div>
   </div>
@@ -246,7 +290,8 @@ footer span{color:var(--tan);}
     <div class="section-header">
       <h2 class="section-title" data-en="Students" data-he="סטודנטים">Students</h2>
       <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
-        <select class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" onchange="filterTrack(this.value)">
+        <input type="text" id="studentSearch" class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" oninput="setSearch(this.value)" data-placeholder-en="Search by name…" data-placeholder-he="חיפוש לפי שם…" placeholder="Search by name…">
+        <select class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" onchange="setTrackFilter(this.value)">
           <option value="all" data-en="All tracks" data-he="כל המסלולים">All tracks</option>
           <option value="english" data-en="English Program" data-he="מסלול אנגלית">English Program</option>
           <option value="hebrew" data-en="Hebrew Program" data-he="מסלול עברית">Hebrew Program</option>
@@ -254,6 +299,9 @@ footer span{color:var(--tan);}
         <span class="section-action" onclick="showPage('bulletin')" data-en="+ Post a project" data-he="+ פרסמו פרויקט">+ Post a project</span>
       </div>
     </div>
+
+    <div class="interest-filter" id="interestFilter"></div>
+    <div class="dir-status" id="dirStatus"></div>
 
     <div class="student-grid" id="studentGrid"></div>
     <div class="empty-state" id="studentsEmpty" style="display:none;" data-en="No student profiles yet. Sign in under My Profile and build yours to be the first!" data-he="עדיין אין פרופילים של סטודנטים. התחברו תחת ׳הפרופיל שלי׳ ובנו את שלכם כדי להיות הראשונים!">No student profiles yet. Sign in under My Profile and build yours to be the first!</div>
@@ -268,25 +316,27 @@ footer span{color:var(--tan);}
     <div class="profile-main">
       <h2 id="profileName">Maya Goldstein</h2>
       <span class="profile-track-badge" id="profileTrack">English Program</span>
-      <p class="profile-bio" id="profileBio">Documentary filmmaker fascinated by stories of displacement, memory, and identity.</p>
+
+      <div class="profile-quickfacts">
+        <div class="profile-section">
+          <h3 data-en="Film interests" data-he="תחומי עניין">Film interests</h3>
+          <div class="profile-tags" id="profileTags"></div>
+        </div>
+        <div class="profile-section">
+          <h3 data-en="Current projects" data-he="פרויקטים נוכחיים">Current projects</h3>
+          <div id="profileProjects"></div>
+        </div>
+        <div class="profile-section">
+          <h3 data-en="Work &amp; links" data-he="עבודות וקישורים">Work &amp; links</h3>
+          <div style="font-size:13px;color:var(--text-muted);line-height:2;" id="profileWork"></div>
+        </div>
+      </div>
+
       <button class="profile-contact-btn" onclick="openContactModal()"><span data-en="✉ Contact" data-he="✉ צרו קשר">✉ Contact</span></button>
-    </div>
-  </div>
-  <div class="profile-body">
-    <div>
-      <div class="profile-section">
-        <h3 data-en="Film interests" data-he="תחומי עניין">Film interests</h3>
-        <div class="profile-tags" id="profileTags"></div>
-      </div>
-      <div class="profile-section" style="margin-top:1.5rem">
-        <h3 data-en="Work &amp; links" data-he="עבודות וקישורים">Work &amp; links</h3>
-        <div style="font-size:13px;color:var(--text-muted);line-height:2;" id="profileWork"></div>
-      </div>
-    </div>
-    <div>
-      <div class="profile-section">
-        <h3 data-en="Current projects" data-he="פרויקטים נוכחיים">Current projects</h3>
-        <div id="profileProjects"></div>
+
+      <div class="profile-section profile-about">
+        <h3 data-en="About" data-he="אודות">About</h3>
+        <p class="profile-bio" id="profileBio">Documentary filmmaker fascinated by stories of displacement, memory, and identity.</p>
       </div>
     </div>
   </div>
@@ -396,8 +446,8 @@ footer span{color:var(--tan);}
         <textarea id="post_details" class="form-input" data-placeholder-en="Describe what you need, when, where, and any conditions..." data-placeholder-he="תארו מה אתם צריכים, מתי, היכן, ותנאים..." placeholder="Describe what you need, when, where, and any conditions..."></textarea>
       </div>
       <div style="display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap;">
-        <button class="btn-primary" onclick="submitPost()" data-en="Post to bulletin" data-he="פרסמו ללוח">Post to bulletin</button>
-        <button class="btn-outline" onclick="togglePostForm()" data-en="Cancel" data-he="ביטול">Cancel</button>
+        <button id="postSubmitBtn" class="btn-primary" onclick="submitPost()" data-en="Post to bulletin" data-he="פרסמו ללוח">Post to bulletin</button>
+        <button class="btn-outline" onclick="resetPostForm()" data-en="Cancel" data-he="ביטול">Cancel</button>
       </div>
     </div>
 
@@ -569,7 +619,9 @@ footer span{color:var(--tan);}
     </div>
     <h3 class="form-section-title" data-en="Film interests" data-he="תחומי עניין בקולנוע">Film interests</h3>
     <div class="form-group">
-      <label class="form-label" data-en="Roles &amp; genres" data-he="תפקידים וז׳אנרים">Roles &amp; genres</label>
+      <label class="form-label" data-en="Roles &amp; genres — tap all that apply" data-he="תפקידים וז׳אנרים — הקישו על כל מה שמתאים">Roles &amp; genres — tap all that apply</label>
+      <div class="interest-chips" id="interestChips"></div>
+      <label class="form-label" style="margin-top:6px;" data-en="Something else? Add your own" data-he="משהו אחר? הוסיפו משלכם">Something else? Add your own</label>
       <div class="tag-input-area" id="tagArea" onclick="document.getElementById('tagInput').focus()">
         <input type="text" class="tag-input" id="tagInput" onkeydown="tagKey(event)" data-placeholder-en="Type an interest and press Enter..." data-placeholder-he="הקלידו תחום עניין ולחצו Enter..." placeholder="Type an interest and press Enter...">
       </div>
@@ -678,7 +730,7 @@ function renderProfilePage(p) {
 
   const tags = p.interests || [];
   document.getElementById('profileTags').innerHTML = tags.length
-    ? tags.map((t,i) => `<span class="tag${i===0?' amber':''}">${esc(t)}</span>`).join('')
+    ? tags.map((t,i) => `<span class="tag${i===0?' amber':''}">${esc(interestLabel(t))}</span>`).join('')
     : '<span style="color:var(--text-muted);font-size:13px;">—</span>';
 
   const links = [];
@@ -751,12 +803,13 @@ async function loadDirectory() {
     const name = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || 'Student';
     const trackKey = (p.track||'').toLowerCase().includes('hebrew') ? 'hebrew' : 'english';
     const tags = (p.interests||[]).slice(0,3)
-      .map((t,i) => `<span class="tag${i===2?' amber':''}">${esc(t)}</span>`).join('');
+      .map((t,i) => `<span class="tag${i===2?' amber':''}">${esc(interestLabel(t))}</span>`).join('');
+    const interestAttr = esc((p.interests||[]).join('|'));
     const photo = p.photo ? `<img src="${esc(p.photo)}" alt="">` : '🎬';
     const working = p.working_on
       ? `<div class="student-working"><strong>${currentLang==='he'?'עובד/ת על:':'Working on:'}</strong> ${esc(p.working_on)}</div>`
       : '';
-    return `<div class="student-card" onclick="showProfile('${esc(p.id)}')" data-track="${trackKey}">
+    return `<div class="student-card" onclick="showProfile('${esc(p.id)}')" data-track="${trackKey}" data-interests="${interestAttr}" data-name="${esc(name.toLowerCase())}">
       <div class="student-photo">${photo}</div>
       <div class="student-info">
         <div class="student-name">${esc(name)}</div>
@@ -766,6 +819,7 @@ async function loadDirectory() {
       </div>
     </div>`;
   }).join('');
+  applyFilters();
 }
 
 function setLang(lang) {
@@ -811,6 +865,7 @@ function setLang(lang) {
 
   // Re-render database-driven content (directory cards, open profile) in the new language
   loadDirectory();
+  loadPosts();   // re-render bulletin posts (type labels + edit/delete) in the new language
   if (currentProfileId && document.getElementById('page-profile').classList.contains('active')) {
     showProfile(currentProfileId);
   }
@@ -818,16 +873,78 @@ function setLang(lang) {
   showToast(lang === 'he' ? 'מציג עברית' : 'Switched to English');
 }
 
-function filterTrack(val) {
+// ----- Directory filters (track + interests + name search) -----
+let trackFilter = 'all';
+let searchQuery = '';
+const interestFilter = new Set();
+
+function setTrackFilter(val) { trackFilter = val; applyFilters(); }
+function setSearch(val) { searchQuery = val.trim().toLowerCase(); applyFilters(); }
+
+function toggleInterestFilter(el) {
+  const v = el.getAttribute('data-value');
+  if (interestFilter.has(v)) { interestFilter.delete(v); el.classList.remove('selected'); }
+  else { interestFilter.add(v); el.classList.add('selected'); }
+  const clear = document.getElementById('filterClear');
+  if (clear) clear.style.display = interestFilter.size ? 'inline' : 'none';
+  applyFilters();
+}
+
+function clearInterestFilter() {
+  interestFilter.clear();
+  document.querySelectorAll('#interestFilter .filter-chip').forEach(c => c.classList.remove('selected'));
+  const clear = document.getElementById('filterClear');
+  if (clear) clear.style.display = 'none';
+  applyFilters();
+}
+
+// Show cards matching the track AND at least one selected interest (OR within interests) AND the name search.
+function applyFilters() {
+  let shown = 0, total = 0;
   document.querySelectorAll('.student-card').forEach(card => {
+    total++;
     const track = card.getAttribute('data-track');
-    card.style.display = (val === 'all' || track === val) ? 'block' : 'none';
+    const ints = (card.getAttribute('data-interests') || '').split('|').filter(Boolean);
+    const name = card.getAttribute('data-name') || '';
+    const trackOk = trackFilter === 'all' || track === trackFilter;
+    const intOk = interestFilter.size === 0 || ints.some(i => interestFilter.has(i));
+    const nameOk = !searchQuery || name.includes(searchQuery);
+    const vis = trackOk && intOk && nameOk;
+    card.style.display = vis ? 'block' : 'none';
+    if (vis) shown++;
   });
+  updateDirStatus(shown, total);
+}
+
+// Show a count, or a friendly "no matches" line when filters hide everyone.
+function updateDirStatus(shown, total) {
+  const el = document.getElementById('dirStatus');
+  if (!el) return;
+  const filtering = trackFilter !== 'all' || interestFilter.size > 0 || !!searchQuery;
+  if (total === 0) { el.textContent = ''; return; }   // empty database handled by studentsEmpty
+  if (shown === 0) {
+    el.textContent = currentLang === 'he'
+      ? 'אין סטודנטים שתואמים את הסינון. נסו לבטל חלק מהבחירות.'
+      : 'No students match these filters. Try removing some.';
+  } else if (filtering) {
+    el.textContent = currentLang === 'he'
+      ? `מציג ${shown} מתוך ${total} סטודנטים`
+      : `Showing ${shown} of ${total} students`;
+  } else {
+    el.textContent = currentLang === 'he' ? `${total} סטודנטים` : `${total} students`;
+  }
 }
 
 function togglePostForm() {
   const f = document.getElementById('postForm');
   const showing = f.style.display === 'none';
+  if (showing) {        // opening a fresh post — make sure we're not in edit mode
+    editingPostId = null;
+    document.getElementById('post_title').value = '';
+    document.getElementById('post_details').value = '';
+    const btn = document.getElementById('postSubmitBtn');
+    if (btn) btn.textContent = currentLang === 'he' ? 'פרסמו ללוח' : 'Post to bulletin';
+  }
   f.style.display = showing ? 'block' : 'none';
   if (showing) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -858,20 +975,35 @@ async function submitPost() {
     track = prof.track || '';
   }
 
-  const { error } = await sb.from('posts').insert({
-    author_id: session.user.id,
-    author_name, track,
+  const fields = {
     type: document.getElementById('post_type').value,
     title,
     details: val('post_details')
-  });
+  };
+
+  let error;
+  if (editingPostId) {
+    ({ error } = await sb.from('posts').update(fields).eq('id', editingPostId));
+  } else {
+    ({ error } = await sb.from('posts').insert({ author_id: session.user.id, author_name, track, ...fields }));
+  }
   if (error) { showToast(error.message); return; }
 
-  showToast(currentLang === 'he' ? 'הפרסום פורסם!' : 'Posted to the bulletin!');
+  showToast(editingPostId
+    ? (currentLang === 'he' ? 'הפרסום עודכן!' : 'Post updated!')
+    : (currentLang === 'he' ? 'הפרסום פורסם!' : 'Posted to the bulletin!'));
+  resetPostForm();
+  loadPosts();
+}
+
+// Clear the post form and leave edit mode.
+function resetPostForm() {
+  editingPostId = null;
   document.getElementById('postForm').style.display = 'none';
   document.getElementById('post_title').value = '';
   document.getElementById('post_details').value = '';
-  loadPosts();
+  const btn = document.getElementById('postSubmitBtn');
+  if (btn) btn.textContent = currentLang === 'he' ? 'פרסמו ללוח' : 'Post to bulletin';
 }
 
 function bulletinCardHtml(p) {
@@ -879,6 +1011,11 @@ function bulletinCardHtml(p) {
   const label = currentLang === 'he' ? t.he : t.en;
   const date = (p.created_at || '').slice(0, 10);
   const meta = date + (p.track ? ' · ' + p.track : '');
+  const mine = authSession && authSession.user && authSession.user.id === p.author_id;
+  const actions = mine ? `<div class="bulletin-actions">
+      <button class="bulletin-action edit" onclick="editPost('${esc(p.id)}')" data-en="Edit" data-he="עריכה">${currentLang==='he'?'עריכה':'Edit'}</button>
+      <button class="bulletin-action delete" onclick="deletePost('${esc(p.id)}')" data-en="Delete" data-he="מחיקה">${currentLang==='he'?'מחיקה':'Delete'}</button>
+    </div>` : '';
   return `<div class="bulletin-card dynamic-post">
     <div class="bulletin-type">
       <div class="bulletin-icon ${t.cls}">${t.icon}</div>
@@ -891,6 +1028,7 @@ function bulletinCardHtml(p) {
         <span class="bulletin-author">${esc(p.author_name || '')}</span>
         <span class="bulletin-date">${esc(meta)}</span>
       </div>
+      ${actions}
     </div>
   </div>`;
 }
@@ -902,14 +1040,76 @@ async function loadPosts() {
   if (!grid) return;
   grid.querySelectorAll('.dynamic-post').forEach(el => el.remove());
   const { data, error } = await sb.from('posts').select('*').order('created_at', { ascending: false });
-  if (error || !data || !data.length) return;
+  if (error || !data || !data.length) { loadedPosts = []; return; }
+  loadedPosts = data;
   grid.insertAdjacentHTML('afterbegin', data.map(p => bulletinCardHtml(p)).join(''));
+}
+
+// Posts the user can edit/delete are tracked here so editPost() can refill the form.
+let loadedPosts = [];
+let editingPostId = null;
+
+// Load one of the user's own posts back into the form for editing.
+function editPost(id) {
+  const p = loadedPosts.find(x => String(x.id) === String(id));
+  if (!p) return;
+  editingPostId = p.id;
+  document.getElementById('post_type').value = p.type || 'other';
+  document.getElementById('post_title').value = p.title || '';
+  document.getElementById('post_details').value = p.details || '';
+  const btn = document.getElementById('postSubmitBtn');
+  if (btn) btn.textContent = currentLang === 'he' ? 'שמרו שינויים' : 'Save changes';
+  const f = document.getElementById('postForm');
+  f.style.display = 'block';
+  f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// Delete one of the user's own posts (RLS allows owner only).
+function deletePost(id) {
+  if (!sb) return;
+  openConfirm(
+    currentLang === 'he' ? 'למחוק את הפרסום?' : 'Delete this post?',
+    currentLang === 'he' ? 'לא ניתן לבטל פעולה זו.' : "This can't be undone.",
+    currentLang === 'he' ? 'מחיקה' : 'Delete',
+    async () => {
+      const { error } = await sb.from('posts').delete().eq('id', id);
+      if (error) { showToast(error.message); return; }
+      showToast(currentLang === 'he' ? 'הפרסום נמחק' : 'Post deleted.');
+      loadPosts();
+    }
+  );
+}
+
+// ----- Reusable styled confirm dialog -----
+let confirmCb = null;
+function openConfirm(title, msg, okLabel, cb) {
+  confirmCb = cb;
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmOk').textContent = okLabel;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('show');
+  confirmCb = null;
+}
+function confirmYes() {
+  const cb = confirmCb;
+  closeConfirm();
+  if (cb) cb();
 }
 
 async function saveProfile() {
   if (!sb) { showToast('Not connected to the database.'); return; }
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
+
+  // Auto-commit any interest / link the user typed but didn't press Enter on,
+  // so half-finished entries are saved instead of silently dropped.
+  const pendingTag = document.getElementById('tagInput');
+  if (pendingTag && pendingTag.value.trim()) { addTagChip(pendingTag.value.trim()); pendingTag.value = ''; }
+  const pendingLink = document.getElementById('galleryLinkInput');
+  if (pendingLink && pendingLink.value.trim()) { addGalleryLink(); }
 
   const row = {
     id: session.user.id,
@@ -941,6 +1141,13 @@ async function loadMyProfile() {
   if (!session) return;
   const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
   if (!p) return;
+  // They already have a profile — switch the hero button to "Edit".
+  const heroBtn = document.getElementById('heroProfileBtn');
+  if (heroBtn) {
+    heroBtn.setAttribute('data-en', 'Edit Your Profile');
+    heroBtn.setAttribute('data-he', 'עריכת הפרופיל שלכם');
+    heroBtn.textContent = currentLang === 'he' ? 'עריכת הפרופיל שלכם' : 'Edit Your Profile';
+  }
   setVal('pf_first', p.first_name); setVal('pf_last', p.last_name);
   if (p.track) setVal('pf_track', p.track);
   setVal('pf_bio', p.bio); setVal('pf_working', p.working_on);
@@ -986,6 +1193,62 @@ function photoDrop(e) {
   if (f) handlePhotoFile(f);
 }
 
+// ----- Interests: shared list powering the profile picker + directory filter -----
+// Stored value is always the English label (canonical) so filtering works in any language.
+const INTERESTS = [
+  { en: 'Directing',           he: 'בימוי' },
+  { en: 'Assistant Directing', he: 'עוזר/ת במאי' },
+  { en: 'Acting',              he: 'משחק' },
+  { en: 'Producing',           he: 'הפקה' },
+  { en: 'Screenwriting',       he: 'תסריטאות' },
+  { en: 'Cinematography',      he: 'צילום קולנוע' },
+  { en: 'Photography',         he: 'צילום סטילס' },
+  { en: 'Camera Operating',    he: 'תפעול מצלמה' },
+  { en: 'Editing',             he: 'עריכה' },
+  { en: 'Color Grading',       he: 'תיקון צבע' },
+  { en: 'Sound',               he: 'סאונד' },
+  { en: 'Lighting',            he: 'תאורה' },
+  { en: 'Production Design',   he: 'עיצוב הפקה' },
+  { en: 'Costume Design',      he: 'עיצוב תלבושות' },
+  { en: 'Hair & Makeup',       he: 'איפור ושיער' },
+  { en: 'Visual Effects',      he: 'אפקטים חזותיים' },
+  { en: 'Music & Scoring',     he: 'מוזיקה ופסקול' },
+  { en: 'Casting',             he: 'ליהוק' },
+  { en: 'VR / Immersive',      he: 'מציאות מדומה / חוויה סוחפת' },
+  { en: 'Theater',             he: 'תיאטרון' },
+  { en: 'Documentary',         he: 'תיעודי' },
+  { en: 'Animation',           he: 'אנימציה' }
+];
+const INTEREST_SET = new Set(INTERESTS.map(i => i.en));
+// Localized label for a stored interest; custom/unknown values are shown as typed.
+function interestLabel(v) {
+  const m = INTERESTS.find(i => i.en === v);
+  return m ? (currentLang === 'he' ? m.he : m.en) : v;
+}
+
+// Render the tappable interest chips on the profile form.
+function renderInterestChips() {
+  const wrap = document.getElementById('interestChips');
+  if (!wrap) return;
+  wrap.innerHTML = INTERESTS.map(i =>
+    `<span class="interest-chip" data-value="${i.en}" data-en="${i.en}" data-he="${i.he}" onclick="this.classList.toggle('selected')">${currentLang === 'he' ? i.he : i.en}</span>`
+  ).join('');
+}
+
+// Render the interest filter chips above the student directory.
+function renderInterestFilter() {
+  const wrap = document.getElementById('interestFilter');
+  if (!wrap) return;
+  const labelTxt = currentLang === 'he' ? 'סינון לפי תחום:' : 'Filter by interest:';
+  const clearTxt = currentLang === 'he' ? 'נקה' : 'Clear';
+  wrap.innerHTML =
+    `<span class="filter-label" data-en="Filter by interest:" data-he="סינון לפי תחום:">${labelTxt}</span>` +
+    INTERESTS.map(i =>
+      `<span class="filter-chip${interestFilter.has(i.en) ? ' selected' : ''}" data-value="${i.en}" data-en="${i.en}" data-he="${i.he}" onclick="toggleInterestFilter(this)">${currentLang === 'he' ? i.he : i.en}</span>`
+    ).join('') +
+    `<span class="filter-clear" id="filterClear" style="display:${interestFilter.size ? 'inline' : 'none'};" onclick="clearInterestFilter()" data-en="Clear" data-he="נקה">${clearTxt}</span>`;
+}
+
 // ----- Interest tags (type + Enter to add, click to remove) -----
 function tagKey(e) {
   if (e.key === 'Enter') {
@@ -1009,12 +1272,24 @@ function addTagChip(text) {
   input.parentNode.insertBefore(chip, input);
 }
 function getTags() {
-  return Array.from(document.querySelectorAll('#tagArea .tag'))
+  const chosen = Array.from(document.querySelectorAll('#interestChips .interest-chip.selected'))
+    .map(c => c.getAttribute('data-value'));
+  const custom = Array.from(document.querySelectorAll('#tagArea .tag'))
     .map(c => c.textContent.replace(/×\s*$/, '').trim()).filter(Boolean);
+  return [...chosen, ...custom];
 }
 function setTags(arr) {
+  document.querySelectorAll('#interestChips .interest-chip').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('#tagArea .tag').forEach(c => c.remove());
-  (arr || []).forEach(t => addTagChip(t));
+  (arr || []).forEach(t => {
+    if (INTEREST_SET.has(t)) {
+      const chip = Array.from(document.querySelectorAll('#interestChips .interest-chip'))
+        .find(c => c.getAttribute('data-value') === t);
+      if (chip) chip.classList.add('selected'); else addTagChip(t);
+    } else {
+      addTagChip(t);   // custom / legacy free-text interest
+    }
+  });
 }
 
 // ----- Project Gallery (photos & videos via Supabase Storage) -----
@@ -1168,6 +1443,7 @@ function refreshAuthUI(session) {
     form.style.display = 'none';
     status.style.display = 'none';
   }
+  loadPosts();   // re-render the bulletin so edit/delete buttons match the logged-in user
 }
 
 async function sendMagicLink(e) {
@@ -1233,7 +1509,7 @@ function closeContactModal() {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeContactModal();
+  if (e.key === 'Escape') { closeContactModal(); closeConfirm(); }
 });
 
 function showToast(msg) {
@@ -1251,7 +1527,9 @@ if (sb) {
   refreshAuthUI(null);
 }
 
-// Load the student directory and bulletin posts on first load.
+// Build the interest pickers, then load the student directory and bulletin posts.
+renderInterestChips();
+renderInterestFilter();
 loadDirectory();
 loadPosts();
 
