@@ -86,6 +86,7 @@ body.he .section-title{font-family:'Frank Ruhl Libre',serif;}
 .student-interests{display:flex;flex-wrap:wrap;gap:4px;}
 .tag{font-size:10px;padding:3px 8px;border-radius:2px;background:var(--sage-pale);color:var(--sage);}
 .tag.amber{background:var(--amber-pale);color:var(--amber);}
+.tag.muted{background:var(--warm-cream);color:var(--text-muted);}
 .student-working{font-size:11px;color:var(--text-muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--warm-cream);}
 .student-working strong{color:var(--red);}
 .profile-hero{background:var(--warm-cream);padding:3rem 2rem;display:flex;align-items:flex-start;gap:2.5rem;border-bottom:1px solid var(--border);flex-wrap:wrap;}
@@ -758,21 +759,30 @@ footer span{color:var(--tan);}
     </div>
     <h3 class="form-section-title" data-en="Your vibe" data-he="הוייב שלכם">Your vibe</h3>
     <span style="font-size:11px;color:var(--text-muted);margin:-6px 0 10px;display:inline-block;" data-en="Optional — help classmates get a feel for you." data-he="רשות — עזרו לחברים לכיתה להכיר אתכם.">Optional — help classmates get a feel for you.</span>
+    <span style="font-size:11px;color:var(--text-muted);margin:-4px 0 10px;display:inline-block;" data-en="Type each one and press Enter — it becomes a tag. Click a tag to remove it." data-he="הקלידו כל אחד ולחצו Enter — זה הופך לתגית. לחצו על תגית כדי להסיר.">Type each one and press Enter — it becomes a tag. Click a tag to remove it.</span>
     <div class="form-group">
       <label class="form-label" data-en="Languages spoken" data-he="שפות">Languages spoken</label>
-      <input type="text" id="pf_languages" class="form-input" data-placeholder-en="e.g. Hebrew, English, Russian" data-placeholder-he="למשל: עברית, אנגלית, רוסית" placeholder="e.g. Hebrew, English, Russian">
+      <div class="tag-input-area" id="langArea" onclick="this.querySelector('.tag-input').focus()">
+        <input type="text" class="tag-input" id="langInput" onkeydown="chipKey(event,'langArea')" data-placeholder-en="e.g. Hebrew, or 'some English' — press Enter" data-placeholder-he="למשל: עברית, או ׳קצת אנגלית׳ — לחצו Enter" placeholder="e.g. Hebrew, or 'some English' — press Enter">
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Inspirations" data-he="השראות">Inspirations</label>
-      <input type="text" id="pf_inspirations" class="form-input" data-placeholder-en="Directors, artists, anything that drives your work" data-placeholder-he="במאים, אמנים, כל מה שמניע את העבודה שלכם" placeholder="Directors, artists, anything that drives your work">
+      <div class="tag-input-area" id="inspArea" onclick="this.querySelector('.tag-input').focus()">
+        <input type="text" class="tag-input" id="inspInput" onkeydown="chipKey(event,'inspArea')" data-placeholder-en="A director, artist, anything — press Enter" data-placeholder-he="במאי, אמן, כל דבר — לחצו Enter" placeholder="A director, artist, anything — press Enter">
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Films you love" data-he="סרטים שאתם אוהבים">Films you love</label>
-      <input type="text" id="pf_fav_films" class="form-input" data-placeholder-en="e.g. Fish Tank, Aftersun, In the Mood for Love" data-placeholder-he="למשל: פיש טנק, אפטרסאן, מצב רוח לאהבה" placeholder="e.g. Fish Tank, Aftersun, In the Mood for Love">
+      <div class="tag-input-area" id="lovesArea" onclick="this.querySelector('.tag-input').focus()">
+        <input type="text" class="tag-input" id="lovesInput" onkeydown="chipKey(event,'lovesArea')" data-placeholder-en="e.g. Aftersun — press Enter" data-placeholder-he="למשל: אפטרסאן — לחצו Enter" placeholder="e.g. Aftersun — press Enter">
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label" data-en="Not for you" data-he="לא בשבילכם">Not for you</label>
-      <input type="text" id="pf_disliked_films" class="form-input" data-placeholder-en="A genre or film that's just not your thing (optional, keep it kind)" data-placeholder-he="ז׳אנר או סרט שפחות מדבר אליכם (רשות, בעדינות)" placeholder="A genre or film that's just not your thing (optional, keep it kind)">
+      <div class="tag-input-area" id="nopeArea" onclick="this.querySelector('.tag-input').focus()">
+        <input type="text" class="tag-input" id="nopeInput" onkeydown="chipKey(event,'nopeArea')" data-placeholder-en="A genre or film (keep it kind) — press Enter" data-placeholder-he="ז׳אנר או סרט (בעדינות) — לחצו Enter" placeholder="A genre or film (keep it kind) — press Enter">
+      </div>
     </div>
     <h3 class="form-section-title" data-en="Film interests" data-he="תחומי עניין בקולנוע">Film interests</h3>
     <div class="form-group">
@@ -889,15 +899,17 @@ function renderProfilePage(p) {
   // "Vibe" block (languages, inspirations, films) — only shows the fields that are filled in.
   const vibe = document.getElementById('profileVibe');
   if (vibe) {
+    const asArr = v => Array.isArray(v) ? v.filter(x => (x || '').trim()) : ((v || '').trim() ? [v] : []);
     const vibeItems = [
-      { val: p.languages,      en: 'Languages',   he: 'שפות',          cls: '' },
-      { val: p.inspirations,   en: 'Inspirations',he: 'השראות',        cls: '' },
-      { val: p.fav_films,      en: 'Loves',       he: 'אוהב/ת',        cls: 'loves' },
-      { val: p.disliked_films, en: 'Not for me',  he: 'לא בשבילי',     cls: 'nope' }
-    ].filter(i => (i.val || '').trim());
-    vibe.innerHTML = vibeItems.map(i =>
-      `<div class="vibe-card"><div class="vibe-label ${i.cls}">${currentLang === 'he' ? i.he : i.en}</div><div class="vibe-value">${esc(i.val)}</div></div>`
-    ).join('');
+      { val: asArr(p.languages),      en: 'Languages',   he: 'שפות',      cls: '' },
+      { val: asArr(p.inspirations),   en: 'Inspirations',he: 'השראות',    cls: '' },
+      { val: asArr(p.fav_films),      en: 'Loves',       he: 'אוהב/ת',    cls: 'loves' },
+      { val: asArr(p.disliked_films), en: 'Not for me',  he: 'לא בשבילי', cls: 'nope' }
+    ].filter(i => i.val.length);
+    vibe.innerHTML = vibeItems.map(i => {
+      const chips = i.val.map(v => `<span class="tag${i.cls === 'nope' ? ' muted' : ''}">${esc(v)}</span>`).join('');
+      return `<div class="vibe-card"><div class="vibe-label ${i.cls}">${currentLang === 'he' ? i.he : i.en}</div><div class="vibe-value" style="display:flex;flex-wrap:wrap;gap:5px;">${chips}</div></div>`;
+    }).join('');
     vibe.style.display = vibeItems.length ? 'grid' : 'none';
   }
 
@@ -949,10 +961,10 @@ function previewProfile() {
     bio: val('pf_bio'),
     interests: getTags(),
     working_on: val('pf_working'),
-    languages: val('pf_languages'),
-    inspirations: val('pf_inspirations'),
-    fav_films: val('pf_fav_films'),
-    disliked_films: val('pf_disliked_films'),
+    languages: getChips('langArea'),
+    inspirations: getChips('inspArea'),
+    fav_films: getChips('lovesArea'),
+    disliked_films: getChips('nopeArea'),
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
@@ -1610,6 +1622,7 @@ async function saveProfile() {
   if (pendingTag && pendingTag.value.trim()) { addTagChip(pendingTag.value.trim()); pendingTag.value = ''; }
   const pendingLink = document.getElementById('galleryLinkInput');
   if (pendingLink && pendingLink.value.trim()) { addGalleryLink(); }
+  ['langArea', 'inspArea', 'lovesArea', 'nopeArea'].forEach(flushChipInput);
 
   const row = {
     id: session.user.id,
@@ -1620,10 +1633,10 @@ async function saveProfile() {
     bio: val('pf_bio'),
     interests: getTags(),
     working_on: val('pf_working'),
-    languages: val('pf_languages'),
-    inspirations: val('pf_inspirations'),
-    fav_films: val('pf_fav_films'),
-    disliked_films: val('pf_disliked_films'),
+    languages: getChips('langArea'),
+    inspirations: getChips('inspArea'),
+    fav_films: getChips('lovesArea'),
+    disliked_films: getChips('nopeArea'),
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
@@ -1662,8 +1675,8 @@ async function loadMyProfile() {
   setVal('pf_first', p.first_name); setVal('pf_last', p.last_name);
   if (p.track) setVal('pf_track', p.track);
   setVal('pf_bio', p.bio); setVal('pf_working', p.working_on);
-  setVal('pf_languages', p.languages); setVal('pf_inspirations', p.inspirations);
-  setVal('pf_fav_films', p.fav_films); setVal('pf_disliked_films', p.disliked_films);
+  setChips('langArea', p.languages); setChips('inspArea', p.inspirations);
+  setChips('lovesArea', p.fav_films); setChips('nopeArea', p.disliked_films);
   setVal('pf_website', p.website);
   setVal('pf_instagram', p.instagram); setVal('pf_whatsapp', p.whatsapp);
   setTags(p.interests || []);
@@ -1803,6 +1816,49 @@ function setTags(arr) {
       addTagChip(t);   // custom / legacy free-text interest
     }
   });
+}
+
+// ----- Generic freeform chip fields (languages, inspirations, films) -----
+// Type + Enter turns text into a colored chip; values are saved exactly as typed.
+function chipKey(e, areaId) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const v = e.target.value.trim();
+    if (v) { addChipTo(areaId, v); e.target.value = ''; }
+  } else if (e.key === 'Backspace' && !e.target.value) {
+    const chips = document.querySelectorAll('#' + areaId + ' .tag');
+    if (chips.length) chips[chips.length - 1].remove();
+  }
+}
+function addChipTo(areaId, text) {
+  const area = document.getElementById(areaId);
+  if (!area) return;
+  const input = area.querySelector('.tag-input');
+  const chip = document.createElement('span');
+  chip.className = 'tag removable';
+  chip.textContent = text;
+  const x = document.createElement('span');
+  x.className = 'tag-x'; x.textContent = '×';
+  chip.appendChild(x);
+  chip.onclick = () => chip.remove();
+  area.insertBefore(chip, input);
+}
+function getChips(areaId) {
+  return Array.from(document.querySelectorAll('#' + areaId + ' .tag'))
+    .map(c => c.textContent.replace(/×\s*$/, '').trim()).filter(Boolean);
+}
+function setChips(areaId, arr) {
+  const area = document.getElementById(areaId);
+  if (!area) return;
+  area.querySelectorAll('.tag').forEach(c => c.remove());
+  (Array.isArray(arr) ? arr : (arr ? [arr] : [])).forEach(t => addChipTo(areaId, t));
+}
+// Commit any text left in a chip field's input (typed but not yet Entered) before saving.
+function flushChipInput(areaId) {
+  const area = document.getElementById(areaId);
+  if (!area) return;
+  const input = area.querySelector('.tag-input');
+  if (input && input.value.trim()) { addChipTo(areaId, input.value.trim()); input.value = ''; }
 }
 
 // ----- Project Gallery (photos & videos via Supabase Storage) -----
