@@ -267,6 +267,7 @@ footer span{color:var(--tan);}
   <div class="nav-links">
     <div class="nav-link active" onclick="showPage('home')" data-en="Students" data-he="סטודנטים">Students</div>
     <div class="nav-link" onclick="showPage('bulletin')" data-en="Bulletin" data-he="לוח מודעות">Bulletin</div>
+    <div class="nav-link" onclick="showPage('locations')" data-en="Locations" data-he="לוקיישנים">Locations</div>
     <div class="nav-link" onclick="showPage('faculty')" data-en="Faculty" data-he="מרצים">Faculty</div>
     <div class="nav-link" onclick="showPage('editProfile')" data-en="My Profile" data-he="הפרופיל שלי">My Profile</div>
   </div>
@@ -309,6 +310,20 @@ footer span{color:var(--tan);}
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:1rem;">
       <button class="btn-primary" onclick="copyDigest()" data-en="Copy for Brevo" data-he="העתקה ל-Brevo">Copy for Brevo</button>
       <button class="btn-outline" onclick="closeDigest()" data-en="Close" data-he="סגירה">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCATION DETAIL MODAL -->
+<div id="locationModal" class="modal-overlay" onclick="closeLocation(event)">
+  <div class="modal modal-wide" onclick="event.stopPropagation()">
+    <h3 id="locModalName"></h3>
+    <div id="locModalMeta" class="modal-sub" style="margin-bottom:1rem;"></div>
+    <div id="locModalBody"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:1.25rem;align-items:center;">
+      <button class="btn-primary" id="locContactBtn">Added by</button>
+      <span id="locModalActions" style="display:flex;gap:10px;flex-wrap:wrap;"></span>
+      <button class="btn-outline" onclick="closeLocation()" data-en="Close" data-he="סגירה" style="margin-left:auto;">Close</button>
     </div>
   </div>
 </div>
@@ -510,6 +525,73 @@ footer span{color:var(--tan);}
         <button type="submit" class="btn-primary" style="font-size:12px;padding:10px 20px;flex-shrink:0;" data-en="Subscribe" data-he="הרשמה">Subscribe</button>
       </form>
     </div>
+  </div>
+</div>
+
+<!-- LOCATIONS PAGE -->
+<div id="page-locations" class="page">
+  <div class="hero" style="padding:3rem 2rem;">
+    <div class="hero-eyebrow" data-en="Location Library" data-he="מאגר לוקיישנים">Location Library</div>
+    <h1 data-en="Find your next <em>location</em>" data-he="מצאו את ה<em>לוקיישן</em> הבא">Find your next <em>location</em></h1>
+    <p class="hero-sub" style="margin-bottom:0;" data-en="Real spaces classmates have filmed in — a starting point for scouting. To ask about a place, reach out to the student who added it." data-he="מקומות אמיתיים שחברים לכיתה צילמו בהם — נקודת פתיחה לאיתור לוקיישנים. כדי לשאול על מקום, פנו לסטודנט שהוסיף אותו.">Real spaces classmates have filmed in — a starting point for scouting. To ask about a place, reach out to the student who added it.</p>
+  </div>
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title" data-en="Spaces" data-he="מקומות">Spaces</h2>
+      <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="locSearch" class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" oninput="setLocSearch(this.value)" data-placeholder-en="Search…" data-placeholder-he="חיפוש…" placeholder="Search…">
+        <select id="locRegionFilter" class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" onchange="setLocRegion(this.value)">
+          <option value="all" data-en="All regions" data-he="כל האזורים">All regions</option>
+        </select>
+        <button class="btn-primary" onclick="toggleLocForm()" style="font-size:12px;padding:8px 18px;" data-en="+ Add a location" data-he="+ הוספת לוקיישן">+ Add a location</button>
+      </div>
+    </div>
+
+    <div style="background:var(--amber-pale);border-radius:4px;padding:10px 14px;font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:1.25rem;" data-en="⚠ These are classmates' real contacts and favors. Always arrange your own permission — don't show up unannounced or share details outside the school." data-he="⚠ אלה קשרים וטובות אמיתיים של חברים לכיתה. תמיד תאמו אישור בעצמכם — אל תגיעו בלי תיאום ואל תשתפו פרטים מחוץ לבית הספר.">⚠ These are classmates' real contacts and favors. Always arrange your own permission — don't show up unannounced or share details outside the school.</div>
+
+    <div class="interest-filter" id="locCategoryFilter"></div>
+    <div class="dir-status" id="locStatus"></div>
+
+    <div id="locForm" style="display:none;background:white;border:1px solid var(--border);border-radius:4px;padding:1.75rem;margin-bottom:2rem;">
+      <h3 style="font-family:'Playfair Display',serif;font-weight:400;font-size:1.2rem;margin-bottom:1.25rem;" data-en="Add a location" data-he="הוספת לוקיישן">Add a location</h3>
+      <div class="form-group">
+        <label class="form-label" data-en="Place name" data-he="שם המקום">Place name</label>
+        <input id="loc_name" class="form-input" type="text" data-placeholder-en="e.g. Café Xoho, Florentin" data-placeholder-he="למשל: קפה שוחו, פלורנטין" placeholder="e.g. Café Xoho, Florentin">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" data-en="Category" data-he="קטגוריה">Category</label>
+          <select id="loc_category" class="form-input"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-en="Region" data-he="אזור">Region</label>
+          <select id="loc_region" class="form-input"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-en="Notes — what's it good for?" data-he="הערות — למה זה מתאים?">Notes — what's it good for?</label>
+        <textarea id="loc_notes" class="form-input" data-placeholder-en="Neighborhood, the look/vibe, light, noise, what you shot there…" data-placeholder-he="שכונה, האווירה/המראה, תאורה, רעש, מה צילמתם שם…" placeholder="Neighborhood, the look/vibe, light, noise, what you shot there…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-en="Access &amp; cost" data-he="גישה ועלות">Access &amp; cost</label>
+        <input id="loc_access" class="form-input" type="text" data-placeholder-en="e.g. Free if you ask nicely · paid ~₪500/day · needed a permit" data-placeholder-he="למשל: חינם אם מבקשים יפה · בתשלום ~500₪ ליום · צריך אישור" placeholder="e.g. Free if you ask nicely · paid ~₪500/day · needed a permit">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-en="Photos" data-he="תמונות">Photos</label>
+        <div class="upload-zone" id="locPhotoZone" onclick="document.getElementById('locPhotoInput').click()" ondragover="locPhotoDragOver(event)" ondragleave="locPhotoDragLeave(event)" ondrop="locPhotoDrop(event)">
+          <p data-en="📷 Drag photos here or click to upload" data-he="📷 גררו תמונות לכאן או לחצו להעלאה">📷 Drag photos here or click to upload</p>
+          <input type="file" id="locPhotoInput" accept="image/*" multiple style="display:none" onchange="locPhotoPick(this)">
+        </div>
+        <div class="gallery-grid" id="locPhotoPreview" style="margin-top:12px;"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:1rem;">
+        <button id="locSubmitBtn" class="btn-primary" onclick="submitLocation()" data-en="Add location" data-he="הוספת לוקיישן">Add location</button>
+        <button class="btn-outline" onclick="resetLocForm()" data-en="Cancel" data-he="ביטול">Cancel</button>
+      </div>
+    </div>
+
+    <div class="student-grid" id="locGrid"></div>
+    <div class="empty-state" id="locEmpty" style="display:none;" data-en="No locations yet. Sign in and add the first space you've filmed in!" data-he="עדיין אין לוקיישנים. התחברו והוסיפו את המקום הראשון שצילמתם בו!">No locations yet. Sign in and add the first space you've filmed in!</div>
   </div>
 </div>
 
@@ -742,7 +824,7 @@ let currentProfileContact = null;   // {email, whatsapp, instagram} for the open
 let photoDataUrl = null;            // the chosen profile photo, as a data URL
 let galleryUrls = [];              // uploaded Project Gallery media URLs
 let galleryCounter = 0;            // keeps uploaded filenames unique
-const pages = ['home','profile','bulletin','faculty','editProfile'];
+const pages = ['home','profile','bulletin','locations','faculty','editProfile'];
 function isVideoUrl(u){ return /\.(mp4|mov|webm|m4v|ogg)(\?|$)/i.test(u || ''); }
 
 // Small helpers
@@ -757,11 +839,12 @@ function showPage(name) {
   });
   const target = document.getElementById('page-' + name);
   if (target) target.classList.add('active');
-  const navMap = ['home','bulletin','faculty','editProfile'];
+  const navMap = ['home','bulletin','locations','faculty','editProfile'];
   document.querySelectorAll('.nav-link').forEach((l,i) => l.classList.toggle('active', navMap[i] === name));
   if (name === 'editProfile') refreshAuthUI(authSession);
   if (name === 'home') loadDirectory();
   if (name === 'bulletin') loadPosts();
+  if (name === 'locations') loadLocations();
   window.scrollTo(0,0);
 }
 
@@ -918,6 +1001,7 @@ function setLang(lang) {
   // Re-render database-driven content (directory cards, open profile) in the new language
   loadDirectory();
   loadPosts();   // re-render bulletin posts (type labels + edit/delete) in the new language
+  loadLocations();   // re-render the location library in the new language
   if (currentProfileId && document.getElementById('page-profile').classList.contains('active')) {
     showProfile(currentProfileId);
   }
@@ -1207,6 +1291,267 @@ function copyDigest() {
   showToast(ok
     ? (currentLang === 'he' ? 'הועתק! הדביקו ב-Brevo' : 'Copied! Paste into Brevo.')
     : (currentLang === 'he' ? 'בחרו והעתיקו ידנית' : 'Select the text and copy manually.'));
+}
+
+// ===== Location library (scouting spaces) =====
+const LOC_CATEGORIES = [
+  { en: 'Restaurant / Café',       he: 'מסעדה / בית קפה' },
+  { en: 'Bar / Club',              he: 'בר / מועדון' },
+  { en: 'Park / Outdoor',          he: 'פארק / טבע' },
+  { en: 'Beach',                   he: 'חוף' },
+  { en: 'Apartment / Home',        he: 'דירה / בית' },
+  { en: 'Rooftop',                 he: 'גג' },
+  { en: 'Studio',                  he: 'סטודיו' },
+  { en: 'Office',                  he: 'משרד' },
+  { en: 'Shop / Store',            he: 'חנות' },
+  { en: 'Industrial / Warehouse',  he: 'תעשייה / מחסן' },
+  { en: 'Medical / Clinic',        he: 'רפואי / מרפאה' },
+  { en: 'School / Institution',    he: 'מוסד חינוכי' },
+  { en: 'Religious building',      he: 'מבנה דת' },
+  { en: 'Hotel',                   he: 'מלון' },
+  { en: 'Street / Public',         he: 'רחוב / מרחב ציבורי' }
+];
+const LOC_REGIONS = [
+  { en: 'Tel Aviv & Gush Dan',     he: 'תל אביב וגוש דן' },
+  { en: 'Jerusalem area',          he: 'ירושלים והסביבה' },
+  { en: 'North (Haifa & Galilee)', he: 'צפון (חיפה והגליל)' },
+  { en: 'Center (Sharon & Shfela)',he: 'מרכז (השרון והשפלה)' },
+  { en: 'South (Negev & Eilat)',   he: 'דרום (נגב ואילת)' },
+  { en: 'Other',                   he: 'אחר' }
+];
+function catLabel(v) { const m = LOC_CATEGORIES.find(i => i.en === v); return m ? (currentLang === 'he' ? m.he : m.en) : (v || ''); }
+function regionLabel(v) { const m = LOC_REGIONS.find(i => i.en === v); return m ? (currentLang === 'he' ? m.he : m.en) : (v || ''); }
+
+let locCategoryFilter = new Set();
+let locRegionFilter = 'all';
+let locSearch = '';
+let loadedLocations = [];
+let editingLocId = null;
+let locationPhotos = [];
+let locPhotoCounter = 0;
+
+// Fill the form selects, the region filter, and the category filter chips (re-run on language change).
+function renderLocUI() {
+  const cat = document.getElementById('loc_category');
+  if (cat) cat.innerHTML = LOC_CATEGORIES.map(i => `<option value="${esc(i.en)}">${currentLang === 'he' ? i.he : i.en}</option>`).join('');
+  const reg = document.getElementById('loc_region');
+  if (reg) reg.innerHTML = LOC_REGIONS.map(i => `<option value="${esc(i.en)}">${currentLang === 'he' ? i.he : i.en}</option>`).join('');
+  const regF = document.getElementById('locRegionFilter');
+  if (regF) {
+    const allLabel = currentLang === 'he' ? 'כל האזורים' : 'All regions';
+    regF.innerHTML = `<option value="all">${allLabel}</option>` +
+      LOC_REGIONS.map(i => `<option value="${esc(i.en)}">${currentLang === 'he' ? i.he : i.en}</option>`).join('');
+    regF.value = locRegionFilter;
+  }
+  const chips = document.getElementById('locCategoryFilter');
+  if (chips) chips.innerHTML = LOC_CATEGORIES.map(i =>
+    `<span class="filter-chip${locCategoryFilter.has(i.en) ? ' selected' : ''}" data-value="${esc(i.en)}" onclick="toggleLocCat(this)">${currentLang === 'he' ? i.he : i.en}</span>`
+  ).join('');
+}
+
+function setLocSearch(v) { locSearch = v.trim().toLowerCase(); applyLocFilters(); }
+function setLocRegion(v) { locRegionFilter = v; applyLocFilters(); }
+function toggleLocCat(el) {
+  const v = el.getAttribute('data-value');
+  if (locCategoryFilter.has(v)) { locCategoryFilter.delete(v); el.classList.remove('selected'); }
+  else { locCategoryFilter.add(v); el.classList.add('selected'); }
+  applyLocFilters();
+}
+// Filter cards by category (any-of) AND region AND keyword, then update the count line.
+function applyLocFilters() {
+  let shown = 0, total = 0;
+  document.querySelectorAll('#locGrid .student-card').forEach(card => {
+    total++;
+    const cat = card.getAttribute('data-cat');
+    const reg = card.getAttribute('data-region');
+    const txt = card.getAttribute('data-search') || '';
+    const catOk = locCategoryFilter.size === 0 || locCategoryFilter.has(cat);
+    const regOk = locRegionFilter === 'all' || reg === locRegionFilter;
+    const sOk = !locSearch || txt.includes(locSearch);
+    const vis = catOk && regOk && sOk;
+    card.style.display = vis ? 'block' : 'none';
+    if (vis) shown++;
+  });
+  const el = document.getElementById('locStatus');
+  if (!el) return;
+  const filtering = locCategoryFilter.size > 0 || locRegionFilter !== 'all' || !!locSearch;
+  if (total === 0) el.textContent = '';
+  else if (shown === 0) el.textContent = currentLang === 'he' ? 'אין לוקיישנים תואמים. נסו לבטל חלק מהבחירות.' : 'No locations match. Try removing some filters.';
+  else if (filtering) el.textContent = currentLang === 'he' ? `מציג ${shown} מתוך ${total}` : `Showing ${shown} of ${total} locations`;
+  else el.textContent = currentLang === 'he' ? `${total} לוקיישנים` : `${total} locations`;
+}
+
+async function loadLocations() {
+  renderLocUI();
+  const grid = document.getElementById('locGrid');
+  const empty = document.getElementById('locEmpty');
+  if (!grid || !empty) return;
+  if (!sb) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  const { data, error } = await sb.from('locations').select('*').order('created_at', { ascending: false });
+  if (error) { grid.innerHTML = ''; empty.style.display = 'block'; return; }  // table not created yet
+  loadedLocations = data || [];
+  if (!loadedLocations.length) { grid.innerHTML = ''; empty.style.display = 'block'; document.getElementById('locStatus').textContent = ''; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = loadedLocations.map(locationCardHtml).join('');
+  applyLocFilters();
+}
+
+function locationCardHtml(p) {
+  const photo = (p.photos && p.photos[0]) ? `<img src="${esc(p.photos[0])}" alt="">` : '📍';
+  const meta = [catLabel(p.category), regionLabel(p.region)].filter(Boolean).join(' · ');
+  const search = ((p.name || '') + ' ' + (p.notes || '') + ' ' + (p.owner_name || '') + ' ' + (p.access_cost || '')).toLowerCase();
+  const note = (p.notes || '').trim();
+  const noteHtml = note ? `<div class="student-working">${esc(note.slice(0, 90))}${note.length > 90 ? '…' : ''}</div>` : '';
+  return `<div class="student-card" onclick="openLocation('${esc(p.id)}')" data-cat="${esc(p.category || '')}" data-region="${esc(p.region || '')}" data-search="${esc(search)}">
+    <div class="student-photo">${photo}</div>
+    <div class="student-info">
+      <div class="student-name">${esc(p.name || '')}</div>
+      <div class="student-track">${esc(meta)}</div>
+      ${noteHtml}
+    </div>
+  </div>`;
+}
+
+function openLocation(id) {
+  const p = loadedLocations.find(x => String(x.id) === String(id));
+  if (!p) return;
+  document.getElementById('locModalName').textContent = p.name || '';
+  document.getElementById('locModalMeta').textContent = [catLabel(p.category), regionLabel(p.region)].filter(Boolean).join(' · ');
+  let body = '';
+  if (p.notes) body += `<p style="font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap;margin-bottom:1rem;">${esc(p.notes)}</p>`;
+  if (p.access_cost) body += `<div style="font-size:13px;margin-bottom:1rem;"><strong style="color:var(--red);">${currentLang === 'he' ? 'גישה ועלות: ' : 'Access & cost: '}</strong>${esc(p.access_cost)}</div>`;
+  if (p.photos && p.photos.length) body += `<div class="gallery-grid">${p.photos.map(u => galleryDisplayHtml(u)).join('')}</div>`;
+  document.getElementById('locModalBody').innerHTML = body;
+
+  const cbtn = document.getElementById('locContactBtn');
+  cbtn.textContent = (currentLang === 'he' ? 'נוסף ע״י ' : 'Added by ') + (p.owner_name || '');
+  cbtn.onclick = () => { closeLocation(); if (p.owner_id) showProfile(p.owner_id); };
+
+  const me = authSession && authSession.user ? authSession.user.id : null;
+  const canManage = (me && me === p.owner_id) || isAdmin();
+  const actions = document.getElementById('locModalActions');
+  actions.innerHTML = canManage
+    ? `<button class="btn-outline" onclick="editLocation('${esc(p.id)}')" data-en="Edit" data-he="עריכה">${currentLang === 'he' ? 'עריכה' : 'Edit'}</button>
+       <button class="btn-outline" style="color:var(--red);border-color:var(--red);" onclick="deleteLocation('${esc(p.id)}')" data-en="Delete" data-he="מחיקה">${currentLang === 'he' ? 'מחיקה' : 'Delete'}</button>`
+    : '';
+  document.getElementById('locationModal').classList.add('show');
+}
+function closeLocation() { document.getElementById('locationModal').classList.remove('show'); }
+
+function toggleLocForm() {
+  const f = document.getElementById('locForm');
+  const showing = f.style.display === 'none';
+  if (showing) resetLocFormFields();
+  f.style.display = showing ? 'block' : 'none';
+  if (showing) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function resetLocFormFields() {
+  editingLocId = null;
+  document.getElementById('loc_name').value = '';
+  document.getElementById('loc_notes').value = '';
+  document.getElementById('loc_access').value = '';
+  locationPhotos = [];
+  renderLocPhotos();
+  const btn = document.getElementById('locSubmitBtn');
+  if (btn) btn.textContent = currentLang === 'he' ? 'הוספת לוקיישן' : 'Add location';
+}
+function resetLocForm() { resetLocFormFields(); document.getElementById('locForm').style.display = 'none'; }
+
+async function submitLocation() {
+  if (!sb) { showToast('Not connected to the database.'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
+  const name = document.getElementById('loc_name').value.trim();
+  if (!name) { showToast(currentLang === 'he' ? 'הוסיפו שם מקום' : 'Please add a place name.'); return; }
+  let owner_name = session.user.email;
+  const { data: prof } = await sb.from('profiles').select('first_name,last_name').eq('id', session.user.id).maybeSingle();
+  if (prof) owner_name = ((prof.first_name || '') + ' ' + (prof.last_name || '')).trim() || session.user.email;
+  const fields = {
+    name,
+    category: document.getElementById('loc_category').value,
+    region: document.getElementById('loc_region').value,
+    notes: document.getElementById('loc_notes').value.trim(),
+    access_cost: document.getElementById('loc_access').value.trim(),
+    photos: locationPhotos
+  };
+  let error;
+  if (editingLocId) { ({ error } = await sb.from('locations').update(fields).eq('id', editingLocId)); }
+  else { ({ error } = await sb.from('locations').insert({ owner_id: session.user.id, owner_name, ...fields })); }
+  if (error) { showToast(error.message); return; }
+  showToast(editingLocId
+    ? (currentLang === 'he' ? 'הלוקיישן עודכן!' : 'Location updated!')
+    : (currentLang === 'he' ? 'הלוקיישן נוסף!' : 'Location added!'));
+  resetLocForm();
+  loadLocations();
+}
+function editLocation(id) {
+  const p = loadedLocations.find(x => String(x.id) === String(id));
+  if (!p) return;
+  closeLocation();
+  editingLocId = p.id;
+  document.getElementById('loc_name').value = p.name || '';
+  document.getElementById('loc_category').value = p.category || LOC_CATEGORIES[0].en;
+  document.getElementById('loc_region').value = p.region || LOC_REGIONS[0].en;
+  document.getElementById('loc_notes').value = p.notes || '';
+  document.getElementById('loc_access').value = p.access_cost || '';
+  locationPhotos = (p.photos || []).slice();
+  renderLocPhotos();
+  const btn = document.getElementById('locSubmitBtn');
+  if (btn) btn.textContent = currentLang === 'he' ? 'שמרו שינויים' : 'Save changes';
+  const f = document.getElementById('locForm');
+  f.style.display = 'block';
+  f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function deleteLocation(id) {
+  if (!sb) return;
+  openConfirm(
+    currentLang === 'he' ? 'למחוק את הלוקיישן?' : 'Delete this location?',
+    currentLang === 'he' ? 'לא ניתן לבטל פעולה זו.' : "This can't be undone.",
+    currentLang === 'he' ? 'מחיקה' : 'Delete',
+    async () => {
+      const { error } = await sb.from('locations').delete().eq('id', id);
+      if (error) { showToast(error.message); return; }
+      showToast(currentLang === 'he' ? 'הלוקיישן נמחק' : 'Location deleted.');
+      closeLocation();
+      loadLocations();
+    }
+  );
+}
+
+// ----- Location photo uploads (reuse the public 'gallery' storage bucket) -----
+function locPhotoPick(input) { handleLocPhotos(input.files); input.value = ''; }
+function locPhotoDragOver(e) { e.preventDefault(); document.getElementById('locPhotoZone').classList.add('dragover'); }
+function locPhotoDragLeave(e) { document.getElementById('locPhotoZone').classList.remove('dragover'); }
+function locPhotoDrop(e) { e.preventDefault(); document.getElementById('locPhotoZone').classList.remove('dragover'); handleLocPhotos(e.dataTransfer.files); }
+async function handleLocPhotos(files) {
+  if (!sb) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
+  for (const file of Array.from(files)) {
+    if (file.size > 50 * 1024 * 1024) { showToast((file.name || 'File') + ': ' + (currentLang === 'he' ? 'גדול מ-50MB' : 'larger than 50MB')); continue; }
+    const tile = document.createElement('div');
+    tile.className = 'gallery-item uploading';
+    tile.textContent = currentLang === 'he' ? 'מעלה…' : 'Uploading…';
+    document.getElementById('locPhotoPreview').appendChild(tile);
+    const safe = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = session.user.id + '/loc_' + Date.now() + '_' + (locPhotoCounter++) + '_' + safe;
+    const { error } = await sb.storage.from('gallery').upload(path, file, { upsert: false });
+    if (error) { tile.classList.remove('uploading'); tile.textContent = '⚠'; showToast(error.message); continue; }
+    const { data: { publicUrl } } = sb.storage.from('gallery').getPublicUrl(path);
+    locationPhotos.push(publicUrl);
+    renderLocPhotoTile(tile, publicUrl);
+  }
+}
+function renderLocPhotoTile(tile, url) {
+  tile.className = 'gallery-item';
+  tile.innerHTML = `<img src="${esc(url)}" alt=""><span class="gallery-remove" title="Remove">×</span>`;
+  tile.querySelector('.gallery-remove').onclick = (ev) => { ev.stopPropagation(); locationPhotos = locationPhotos.filter(u => u !== url); tile.remove(); };
+}
+function renderLocPhotos() {
+  const wrap = document.getElementById('locPhotoPreview');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  locationPhotos.forEach(url => { const tile = document.createElement('div'); tile.className = 'gallery-item'; wrap.appendChild(tile); renderLocPhotoTile(tile, url); });
 }
 
 async function saveProfile() {
@@ -1627,7 +1972,7 @@ function closeContactModal() {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeContactModal(); closeConfirm(); closeDigest(); }
+  if (e.key === 'Escape') { closeContactModal(); closeConfirm(); closeDigest(); closeLocation(); }
 });
 
 function showToast(msg) {
