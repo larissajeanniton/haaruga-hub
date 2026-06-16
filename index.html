@@ -97,6 +97,15 @@ body.he .contact-option{text-align:right;}
 .contact-label{font-size:13px;font-weight:500;}
 .contact-value{font-size:12px;color:var(--text-muted);direction:ltr;}
 body.he .contact-value{text-align:right;}
+.modal-wide{max-width:680px;}
+.digest-preview{max-height:50vh;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:1.25rem;background:white;}
+.digest-post{padding:0 0 1rem;margin-bottom:1rem;border-bottom:1px solid var(--border);}
+.digest-post:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.digest-kicker{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:4px;}
+.digest-post h4{font-family:'Playfair Display',serif;font-weight:400;font-size:1.05rem;margin:0 0 4px;}
+.digest-post p{font-size:13px;color:var(--text-muted);line-height:1.6;margin:0 0 4px;}
+.digest-byline{font-size:11px;color:var(--text-muted);}
+.digest-post[dir="rtl"]{text-align:right;}
 .modal-close{margin-top:8px;text-align:center;font-size:12px;color:var(--text-muted);cursor:pointer;padding:6px;}
 .modal-close:hover{color:var(--red);}
 .profile-body{display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding:2rem;}
@@ -274,6 +283,19 @@ footer span{color:var(--tan);}
   </div>
 </div>
 
+<!-- NEWSLETTER DIGEST MODAL (admin only) -->
+<div id="digestModal" class="modal-overlay" onclick="closeDigest(event)">
+  <div class="modal modal-wide" onclick="event.stopPropagation()">
+    <h3 data-en="This week's newsletter" data-he="הניוזלטר של השבוע">This week's newsletter</h3>
+    <p class="modal-sub" data-en="Each post appears in the language it was posted. Click Copy, then paste into your Brevo template and send." data-he="כל פרסום מופיע בשפה שבה נכתב. לחצו העתקה, הדביקו בתבנית ב-Brevo ושלחו.">Each post appears in the language it was posted. Click Copy, then paste into your Brevo template and send.</p>
+    <div id="digestPreview" class="digest-preview"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:1rem;">
+      <button class="btn-primary" onclick="copyDigest()" data-en="Copy for Brevo" data-he="העתקה ל-Brevo">Copy for Brevo</button>
+      <button class="btn-outline" onclick="closeDigest()" data-en="Close" data-he="סגירה">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- HOME PAGE -->
 <div id="page-home" class="page active">
   <div class="hero">
@@ -310,7 +332,14 @@ footer span{color:var(--tan);}
 
 <!-- PROFILE PAGE -->
 <div id="page-profile" class="page">
-  <div class="back-btn" onclick="showPage('home')"><span class="arrow">←</span> <span data-en="Back to students" data-he="חזרה לסטודנטים">Back to students</span></div>
+  <div class="back-btn" id="profileBackBtn" onclick="showPage('home')"><span class="arrow">←</span> <span data-en="Back to students" data-he="חזרה לסטודנטים">Back to students</span></div>
+  <div id="previewBar" style="display:none;background:var(--amber-pale);border-bottom:1px solid var(--border);padding:12px 2rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+    <span style="font-size:13px;color:var(--amber);font-weight:600;" data-en="Preview — not saved yet" data-he="תצוגה מקדימה — עדיין לא נשמר">Preview — not saved yet</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-outline" onclick="showPage('editProfile')" data-en="← Back to editing" data-he="→ חזרה לעריכה">← Back to editing</button>
+      <button class="btn-primary" onclick="saveFromPreview()" data-en="Save profile" data-he="שמרו פרופיל">Save profile</button>
+    </div>
+  </div>
   <div class="profile-hero">
     <div class="profile-avatar" id="profileAvatar">🎬</div>
     <div class="profile-main">
@@ -358,7 +387,10 @@ footer span{color:var(--tan);}
   <div class="section">
     <div class="section-header">
       <h2 class="section-title" data-en="Active posts" data-he="פרסומים פעילים">Active posts</h2>
-      <button class="btn-primary" onclick="togglePostForm()" style="font-size:12px;padding:8px 18px;" data-en="+ New post" data-he="+ פרסום חדש">+ New post</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button id="digestBtn" class="btn-outline" onclick="openDigest()" style="display:none;font-size:12px;padding:8px 18px;" data-en="📋 Build newsletter" data-he="📋 בניית ניוזלטר">📋 Build newsletter</button>
+        <button class="btn-primary" onclick="togglePostForm()" style="font-size:12px;padding:8px 18px;" data-en="+ New post" data-he="+ פרסום חדש">+ New post</button>
+      </div>
     </div>
 
     <div class="bulletin-grid" id="bulletinGrid">
@@ -453,8 +485,8 @@ footer span{color:var(--tan);}
 
     <div class="newsletter-banner" style="margin-top:2.5rem;">
       <div class="newsletter-text">
-        <h3 data-en="Weekly digest" data-he="עדכון שבועי">Weekly digest</h3>
-        <p data-en="All active bulletin posts are compiled and emailed once a week. No profile needed — just add your email." data-he="כל הפרסומים הפעילים בלוח נאספים ונשלחים בדוא&quot;ל אחת לשבוע. לא צריך פרופיל — רק הוסיפו את כתובת המייל שלכם.">All active bulletin posts are compiled and emailed once a week. No profile needed — just add your email.</p>
+        <h3 data-en="Never miss a collaboration" data-he="אל תפספסו אף שיתוף פעולה">Never miss a collaboration</h3>
+        <p data-en="Subscribe to the HaAruga newsletter and be the first to know about casting calls, crew needs, and projects looking for collaborators — delivered to your inbox every week. Available in both languages." data-he="הירשמו לניוזלטר של הערוגה והיו הראשונים לדעת על קריאות ליהוק, דרושים לצוות, ופרויקטים שמחפשים שותפים — ישירות לתיבת הדואר שלכם, מדי שבוע. זמין בשתי השפות.">Subscribe to the HaAruga newsletter and be the first to know about casting calls, crew needs, and projects looking for collaborators — delivered to your inbox every week. Available in both languages.</p>
       </div>
       <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
         <input type="email" class="newsletter-input" id="newsletterEmail" required data-placeholder-en="your@email.com" data-placeholder-he="your@email.com" placeholder="your@email.com">
@@ -762,6 +794,8 @@ async function showProfile(id) {
   if (error || !p) return;
   currentProfileId = id;
   renderProfilePage(p);
+  document.getElementById('previewBar').style.display = 'none';
+  document.getElementById('profileBackBtn').style.display = '';
   showPage('profile');
 }
 
@@ -783,8 +817,9 @@ function previewProfile() {
   };
   currentProfileId = null;
   renderProfilePage(p);
+  document.getElementById('profileBackBtn').style.display = 'none';
+  document.getElementById('previewBar').style.display = 'flex';
   showPage('profile');
-  showToast(currentLang === 'he' ? 'תצוגה מקדימה — עדיין לא נשמר' : 'Preview — not saved yet');
 }
 
 // Load all profiles into the home directory.
@@ -1099,10 +1134,68 @@ function confirmYes() {
   if (cb) cb();
 }
 
+// ===== Newsletter digest builder (admin only) =====
+// Emails allowed to see the "Build newsletter" button. Add/remove as needed.
+const ADMIN_EMAILS = ['larissa.jeanniton@gmail.com'];
+function isAdmin() {
+  const email = authSession && authSession.user ? (authSession.user.email || '').toLowerCase() : '';
+  // Allow the admin button via the configured emails, or by opening the page with #digest.
+  return ADMIN_EMAILS.map(e => e.toLowerCase()).includes(email) || location.hash === '#digest';
+}
+// Show or hide the admin "Build newsletter" button based on who's logged in.
+function refreshDigestButton() {
+  const btn = document.getElementById('digestBtn');
+  if (btn) btn.style.display = isAdmin() ? 'inline-flex' : 'none';
+}
+// Detect whether a post was written in Hebrew (used to keep its original language + direction).
+function isHebrew(text) { return /[֐-׿]/.test(text || ''); }
+
+// Build this week's digest preview from the real bulletin posts (each in its original language).
+function openDigest() {
+  const wrap = document.getElementById('digestPreview');
+  if (!loadedPosts.length) {
+    wrap.innerHTML = '<p style="font-size:13px;color:var(--text-muted);">' +
+      (currentLang === 'he' ? 'אין פרסומים לכלול עדיין.' : 'No posts to include yet.') + '</p>';
+  } else {
+    wrap.innerHTML = loadedPosts.map(p => {
+      const he = isHebrew((p.title || '') + ' ' + (p.details || ''));
+      const t = POST_TYPES[p.type] || POST_TYPES.other;
+      const label = he ? t.he : t.en;
+      const date = (p.created_at || '').slice(0, 10);
+      const byline = [esc(p.author_name || ''), esc(p.track || ''), date].filter(Boolean).join(' · ');
+      return `<div class="digest-post" dir="${he ? 'rtl' : 'ltr'}">
+        <div class="digest-kicker">${esc(label)}</div>
+        <h4>${esc(p.title || '')}</h4>
+        <p>${esc(p.details || '').replace(/\n/g, '<br>')}</p>
+        <div class="digest-byline">${byline}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('digestModal').classList.add('show');
+}
+function closeDigest() { document.getElementById('digestModal').classList.remove('show'); }
+
+// Copy the formatted digest (rich HTML) so it pastes straight into the Brevo editor.
+function copyDigest() {
+  const el = document.getElementById('digestPreview');
+  if (!loadedPosts.length) { showToast(currentLang === 'he' ? 'אין מה להעתיק' : 'Nothing to copy.'); return; }
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  sel.removeAllRanges();
+  showToast(ok
+    ? (currentLang === 'he' ? 'הועתק! הדביקו ב-Brevo' : 'Copied! Paste into Brevo.')
+    : (currentLang === 'he' ? 'בחרו והעתיקו ידנית' : 'Select the text and copy manually.'));
+}
+
 async function saveProfile() {
-  if (!sb) { showToast('Not connected to the database.'); return; }
+  if (!sb) { showToast('Not connected to the database.'); return false; }
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
+  if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return false; }
 
   // Auto-commit any interest / link the user typed but didn't press Enter on,
   // so half-finished entries are saved instead of silently dropped.
@@ -1129,9 +1222,16 @@ async function saveProfile() {
   if (photoDataUrl) row.photo = photoDataUrl;
 
   const { error } = await sb.from('profiles').upsert(row);
-  if (error) { showToast(error.message); return; }
+  if (error) { showToast(error.message); return false; }
   showToast(currentLang === 'he' ? 'הפרופיל נשמר! הדף שלך פעיל.' : 'Profile saved! Your page is now live.');
   loadDirectory();
+  return true;
+}
+
+// Save directly from the preview page, then return to the directory on success.
+async function saveFromPreview() {
+  const ok = await saveProfile();
+  if (ok) showPage('home');
 }
 
 // Fill the form with the signed-in user's saved profile (if any).
@@ -1444,6 +1544,7 @@ function refreshAuthUI(session) {
     status.style.display = 'none';
   }
   loadPosts();   // re-render the bulletin so edit/delete buttons match the logged-in user
+  refreshDigestButton();   // show the admin "Build newsletter" button to admins only
 }
 
 async function sendMagicLink(e) {
@@ -1509,7 +1610,7 @@ function closeContactModal() {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeContactModal(); closeConfirm(); }
+  if (e.key === 'Escape') { closeContactModal(); closeConfirm(); closeDigest(); }
 });
 
 function showToast(msg) {
