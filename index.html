@@ -1648,6 +1648,7 @@ async function saveProfile() {
   const { error } = await sb.from('profiles').upsert(row);
   if (error) { showToast(error.message); return false; }
   showToast(currentLang === 'he' ? 'הפרופיל נשמר! הדף שלך פעיל.' : 'Profile saved! Your page is now live.');
+  formDirty = false;   // saved — no longer need the unsaved-changes warning
   loadDirectory();
   return true;
 }
@@ -1989,6 +1990,10 @@ async function subscribeNewsletter(e) {
 }
 
 // ===== Magic-link login (Supabase) =====
+// Load the saved profile into the form only ONCE per login, so navigating away and
+// back doesn't overwrite unsaved edits with the old database version.
+let profileFormLoaded = false;
+let formDirty = false;   // true once the user edits the profile form; cleared on save
 function refreshAuthUI(session) {
   authSession = session;
   const gate = document.getElementById('authGate');
@@ -2006,7 +2011,7 @@ function refreshAuthUI(session) {
     form.style.display = 'block';
     status.style.display = 'flex';
     document.getElementById('authStatusEmail').textContent = session.user.email;
-    loadMyProfile();
+    if (!profileFormLoaded) { profileFormLoaded = true; loadMyProfile(); }
   } else {
     gate.style.display = 'block';
     form.style.display = 'none';
@@ -2037,6 +2042,7 @@ async function sendMagicLink(e) {
 
 async function signOut() {
   if (sb) await sb.auth.signOut();
+  profileFormLoaded = false;   // next login should load that account's profile fresh
   refreshAuthUI(null);
 }
 
@@ -2102,6 +2108,11 @@ renderInterestChips();
 renderInterestFilter();
 loadDirectory();
 loadPosts();
+
+// Warn before closing/refreshing the tab if the profile form has unsaved edits.
+const _editFormEl = document.getElementById('editForm');
+if (_editFormEl) _editFormEl.addEventListener('input', () => { formDirty = true; });
+window.addEventListener('beforeunload', e => { if (formDirty) { e.preventDefault(); e.returnValue = ''; } });
 
 // Use the HaAruga logo as the browser tab icon (favicon).
 (function () {
