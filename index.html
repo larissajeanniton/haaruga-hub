@@ -589,6 +589,7 @@ footer span{color:var(--tan);}
         <label class="form-label" data-en="Photos" data-he="תמונות">Photos</label>
         <div class="upload-zone" id="locPhotoZone" onclick="document.getElementById('locPhotoInput').click()" ondragover="locPhotoDragOver(event)" ondragleave="locPhotoDragLeave(event)" ondrop="locPhotoDrop(event)">
           <p data-en="📷 Drag photos here or click to upload" data-he="📷 גררו תמונות לכאן או לחצו להעלאה">📷 Drag photos here or click to upload</p>
+          <span data-en="JPG or PNG · Max 50MB each · add several" data-he="JPG או PNG · עד 50MB לכל אחד · אפשר כמה">JPG or PNG · Max 50MB each · add several</span>
           <input type="file" id="locPhotoInput" accept="image/*" multiple style="display:none" onchange="locPhotoPick(this)">
         </div>
         <div class="gallery-grid" id="locPhotoPreview" style="margin-top:12px;"></div>
@@ -1574,6 +1575,22 @@ function deleteLocation(id) {
   );
 }
 
+// Turn a raw storage error into a clear, friendly message (covers a too-low bucket limit, etc.).
+function friendlyUploadError(error, fname) {
+  const m = (error && error.message ? error.message : '').toLowerCase();
+  const name = fname || 'That file';
+  if (m.includes('size') || m.includes('exceeded') || m.includes('large') || m.includes('413') || m.includes('payload')) {
+    return currentLang === 'he' ? `“${name}” גדול מדי להעלאה — נסו קובץ קטן יותר.` : `"${name}" is too large to upload — try a smaller file.`;
+  }
+  if (m.includes('mime') || m.includes('not allowed') || m.includes('invalid') || m.includes('type')) {
+    return currentLang === 'he' ? `“${name}” אינו בפורמט נתמך.` : `"${name}" isn't a supported file type.`;
+  }
+  if (m.includes('permission') || m.includes('denied') || m.includes('unauthorized') || m.includes('policy') || m.includes('row-level')) {
+    return currentLang === 'he' ? 'אין הרשאה להעלות — התנתקו והתחברו מחדש ונסו שוב.' : "Couldn't upload — try signing out and back in.";
+  }
+  return currentLang === 'he' ? `לא ניתן להעלות את “${name}”. נסו קובץ קטן יותר או פורמט אחר.` : `Couldn't upload "${name}". Try a smaller file or a different format.`;
+}
+
 // ----- Location photo uploads (reuse the public 'gallery' storage bucket) -----
 function locPhotoPick(input) { handleLocPhotos(input.files); input.value = ''; }
 function locPhotoDragOver(e) { e.preventDefault(); document.getElementById('locPhotoZone').classList.add('dragover'); }
@@ -1584,7 +1601,19 @@ async function handleLocPhotos(files) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
   for (const file of Array.from(files)) {
-    if (file.size > 50 * 1024 * 1024) { showToast((file.name || 'File') + ': ' + (currentLang === 'he' ? 'גדול מ-50MB' : 'larger than 50MB')); continue; }
+    const fname = file.name || 'File';
+    if (!file.type || !file.type.startsWith('image/')) {
+      showToast(currentLang === 'he'
+        ? `“${fname}” אינו תמונה — העלו JPG או PNG.`
+        : `"${fname}" isn't an image — please upload a JPG or PNG.`);
+      continue;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      showToast(currentLang === 'he'
+        ? `“${fname}” גדול מדי (מקסימום 50MB לקובץ).`
+        : `"${fname}" is too large — max 50MB per file.`);
+      continue;
+    }
     const tile = document.createElement('div');
     tile.className = 'gallery-item uploading';
     tile.textContent = currentLang === 'he' ? 'מעלה…' : 'Uploading…';
@@ -1592,7 +1621,7 @@ async function handleLocPhotos(files) {
     const safe = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = session.user.id + '/loc_' + Date.now() + '_' + (locPhotoCounter++) + '_' + safe;
     const { error } = await sb.storage.from('gallery').upload(path, file, { upsert: false });
-    if (error) { tile.classList.remove('uploading'); tile.textContent = '⚠'; showToast(error.message); continue; }
+    if (error) { tile.classList.remove('uploading'); tile.textContent = '⚠'; showToast(friendlyUploadError(error, fname)); continue; }
     const { data: { publicUrl } } = sb.storage.from('gallery').getPublicUrl(path);
     locationPhotos.push(publicUrl);
     renderLocPhotoTile(tile, publicUrl);
@@ -1695,10 +1724,10 @@ async function loadMyProfile() {
 function previewPhoto(input) { const f = input.files && input.files[0]; if (f) handlePhotoFile(f); }
 function handlePhotoFile(file) {
   if (!file.type || !file.type.startsWith('image/')) {
-    showToast(currentLang === 'he' ? 'קובצי תמונה בלבד' : 'Please choose an image file.'); return;
+    showToast(currentLang === 'he' ? 'קובצי תמונה בלבד — JPG או PNG.' : 'Profile photo must be an image — JPG or PNG.'); return;
   }
   if (file.size > 5 * 1024 * 1024) {
-    showToast(currentLang === 'he' ? 'הקובץ גדול מ-5MB' : 'File is larger than 5MB'); return;
+    showToast(currentLang === 'he' ? 'התמונה גדולה מדי (מקסימום 5MB).' : 'That photo is too large — max 5MB for a profile photo.'); return;
   }
   const reader = new FileReader();
   reader.onload = e => {
@@ -1876,8 +1905,17 @@ async function handleGalleryFiles(files) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { showToast(currentLang === 'he' ? 'התחברו תחילה' : 'Please sign in first.'); return; }
   for (const file of Array.from(files)) {
+    const fname = file.name || 'File';
+    if (!file.type || !(file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      showToast(currentLang === 'he'
+        ? `“${fname}” אינו נתמך — העלו תמונה או סרטון בלבד.`
+        : `"${fname}" isn't supported — please upload an image or video only.`);
+      continue;
+    }
     if (file.size > 50 * 1024 * 1024) {
-      showToast((file.name || 'File') + ': ' + (currentLang === 'he' ? 'גדול מ-50MB' : 'larger than 50MB'));
+      showToast(currentLang === 'he'
+        ? `“${fname}” גדול מדי (מקסימום 50MB לקובץ).`
+        : `"${fname}" is too large — max 50MB per file.`);
       continue;
     }
     const tile = document.createElement('div');
@@ -1888,7 +1926,7 @@ async function handleGalleryFiles(files) {
     const safe = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = session.user.id + '/' + Date.now() + '_' + (galleryCounter++) + '_' + safe;
     const { error } = await sb.storage.from('gallery').upload(path, file, { upsert: false });
-    if (error) { tile.classList.remove('uploading'); tile.textContent = '⚠'; showToast(error.message); continue; }
+    if (error) { tile.classList.remove('uploading'); tile.textContent = '⚠'; showToast(friendlyUploadError(error, fname)); continue; }
     const { data: { publicUrl } } = sb.storage.from('gallery').getPublicUrl(path);
     galleryUrls.push(publicUrl);
     renderGalleryTile(tile, publicUrl);
