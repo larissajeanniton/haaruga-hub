@@ -242,6 +242,12 @@ footer span{color:var(--tan);}
 .profile-quickfacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.25rem 2rem;margin:1.5rem 0;}
 .profile-about{margin-top:1.5rem;}
 .profile-about .profile-bio{margin-bottom:0;}
+.profile-vibe{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1.5rem 0 0;}
+.vibe-card{background:white;border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.vibe-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--amber);margin-bottom:5px;}
+.vibe-label.loves{color:var(--sage);}
+.vibe-label.nope{color:var(--text-muted);}
+.vibe-value{font-size:13px;color:var(--text);line-height:1.5;}
 /* Mobile: wrap the top nav so nothing gets cut off, and show student cards 2-up */
 @media(max-width:640px){
   nav{height:auto;flex-wrap:wrap;padding:8px 1rem;row-gap:4px;}
@@ -394,6 +400,8 @@ footer span{color:var(--tan);}
       </div>
 
       <button class="profile-contact-btn" onclick="openContactModal()"><span data-en="✉ Contact" data-he="✉ צרו קשר">✉ Contact</span></button>
+
+      <div class="profile-vibe" id="profileVibe"></div>
 
       <div class="profile-section profile-about">
         <h3 data-en="About" data-he="אודות">About</h3>
@@ -748,6 +756,24 @@ footer span{color:var(--tan);}
       <label class="form-label" data-en="Short bio" data-he="ביוגרפיה קצרה">Short bio</label>
       <textarea id="pf_bio" class="form-input" data-placeholder-en="Tell the community who you are and what brought you to HaAruga..." data-placeholder-he="ספרו לקהילה מי אתם ומה הביא אתכם לערוגה..." placeholder="Tell the community who you are and what brought you to HaAruga..."></textarea>
     </div>
+    <h3 class="form-section-title" data-en="Your vibe" data-he="הוייב שלכם">Your vibe</h3>
+    <span style="font-size:11px;color:var(--text-muted);margin:-6px 0 10px;display:inline-block;" data-en="Optional — help classmates get a feel for you." data-he="רשות — עזרו לחברים לכיתה להכיר אתכם.">Optional — help classmates get a feel for you.</span>
+    <div class="form-group">
+      <label class="form-label" data-en="Languages spoken" data-he="שפות">Languages spoken</label>
+      <input type="text" id="pf_languages" class="form-input" data-placeholder-en="e.g. Hebrew, English, Russian" data-placeholder-he="למשל: עברית, אנגלית, רוסית" placeholder="e.g. Hebrew, English, Russian">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-en="Inspirations" data-he="השראות">Inspirations</label>
+      <input type="text" id="pf_inspirations" class="form-input" data-placeholder-en="Directors, artists, anything that drives your work" data-placeholder-he="במאים, אמנים, כל מה שמניע את העבודה שלכם" placeholder="Directors, artists, anything that drives your work">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-en="Films you love" data-he="סרטים שאתם אוהבים">Films you love</label>
+      <input type="text" id="pf_fav_films" class="form-input" data-placeholder-en="e.g. Fish Tank, Aftersun, In the Mood for Love" data-placeholder-he="למשל: פיש טנק, אפטרסאן, מצב רוח לאהבה" placeholder="e.g. Fish Tank, Aftersun, In the Mood for Love">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-en="Not for you" data-he="לא בשבילכם">Not for you</label>
+      <input type="text" id="pf_disliked_films" class="form-input" data-placeholder-en="A genre or film that's just not your thing (optional, keep it kind)" data-placeholder-he="ז׳אנר או סרט שפחות מדבר אליכם (רשות, בעדינות)" placeholder="A genre or film that's just not your thing (optional, keep it kind)">
+    </div>
     <h3 class="form-section-title" data-en="Film interests" data-he="תחומי עניין בקולנוע">Film interests</h3>
     <div class="form-group">
       <label class="form-label" data-en="Roles &amp; genres — tap all that apply" data-he="תפקידים וז׳אנרים — הקישו על כל מה שמתאים">Roles &amp; genres — tap all that apply</label>
@@ -860,6 +886,21 @@ function renderProfilePage(p) {
     : '🎬';
   document.getElementById('profileBio').textContent = p.bio || '';
 
+  // "Vibe" block (languages, inspirations, films) — only shows the fields that are filled in.
+  const vibe = document.getElementById('profileVibe');
+  if (vibe) {
+    const vibeItems = [
+      { val: p.languages,      en: 'Languages',   he: 'שפות',          cls: '' },
+      { val: p.inspirations,   en: 'Inspirations',he: 'השראות',        cls: '' },
+      { val: p.fav_films,      en: 'Loves',       he: 'אוהב/ת',        cls: 'loves' },
+      { val: p.disliked_films, en: 'Not for me',  he: 'לא בשבילי',     cls: 'nope' }
+    ].filter(i => (i.val || '').trim());
+    vibe.innerHTML = vibeItems.map(i =>
+      `<div class="vibe-card"><div class="vibe-label ${i.cls}">${currentLang === 'he' ? i.he : i.en}</div><div class="vibe-value">${esc(i.val)}</div></div>`
+    ).join('');
+    vibe.style.display = vibeItems.length ? 'grid' : 'none';
+  }
+
   const tags = p.interests || [];
   document.getElementById('profileTags').innerHTML = tags.length
     ? tags.map((t,i) => `<span class="tag${i===0?' amber':''}">${esc(interestLabel(t))}</span>`).join('')
@@ -908,6 +949,10 @@ function previewProfile() {
     bio: val('pf_bio'),
     interests: getTags(),
     working_on: val('pf_working'),
+    languages: val('pf_languages'),
+    inspirations: val('pf_inspirations'),
+    fav_films: val('pf_fav_films'),
+    disliked_films: val('pf_disliked_films'),
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
@@ -1575,6 +1620,10 @@ async function saveProfile() {
     bio: val('pf_bio'),
     interests: getTags(),
     working_on: val('pf_working'),
+    languages: val('pf_languages'),
+    inspirations: val('pf_inspirations'),
+    fav_films: val('pf_fav_films'),
+    disliked_films: val('pf_disliked_films'),
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
@@ -1613,6 +1662,8 @@ async function loadMyProfile() {
   setVal('pf_first', p.first_name); setVal('pf_last', p.last_name);
   if (p.track) setVal('pf_track', p.track);
   setVal('pf_bio', p.bio); setVal('pf_working', p.working_on);
+  setVal('pf_languages', p.languages); setVal('pf_inspirations', p.inspirations);
+  setVal('pf_fav_films', p.fav_films); setVal('pf_disliked_films', p.disliked_films);
   setVal('pf_website', p.website);
   setVal('pf_instagram', p.instagram); setVal('pf_whatsapp', p.whatsapp);
   setTags(p.interests || []);
