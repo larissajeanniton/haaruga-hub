@@ -235,6 +235,10 @@ body.he .auth-card h3{font-family:'Frank Ruhl Libre',serif;}
 .filter-chip:hover{border-color:var(--sage-light);}
 .filter-chip.selected{background:var(--red);color:white;border-color:var(--red);}
 .filter-clear{font-size:11px;color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.filter-toggle{font-size:11px;color:var(--text-muted);cursor:pointer;text-transform:uppercase;letter-spacing:.5px;user-select:none;}
+.filter-toggle:hover{color:var(--text);}
+.school-chip.ghost{border-style:dashed;color:var(--text-muted);background:none;}
+.school-chip.ghost:hover{border-color:var(--sage-light);color:var(--text);}
 .dir-status{font-size:12px;color:var(--text-muted);margin-bottom:1rem;min-height:1em;}
 .bulletin-actions{display:flex;gap:10px;margin-top:8px;}
 .bulletin-action{font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;background:none;border:none;font-family:inherit;padding:0;}
@@ -387,6 +391,7 @@ footer span{color:var(--tan);}
       <h2 class="section-title" data-en="Students" data-he="סטודנטים">Students</h2>
       <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
         <input type="text" id="studentSearch" class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" oninput="setSearch(this.value)" data-placeholder-en="Search by name…" data-placeholder-he="חיפוש לפי שם…" placeholder="Search by name…">
+        <select id="schoolFilterSelect" class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" onchange="setSchoolFilter(this.value)"></select>
         <select class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" onchange="setTrackFilter(this.value)">
           <option value="all" data-en="All tracks" data-he="כל המסלולים">All tracks</option>
           <option value="english" data-en="English Program" data-he="מסלול אנגלית">English Program</option>
@@ -396,11 +401,9 @@ footer span{color:var(--tan);}
       </div>
     </div>
 
-    <div class="filter-label" style="margin-bottom:8px;" data-en="Browse by school" data-he="עיון לפי בית ספר">Browse by school</div>
-    <div class="school-strip" id="schoolStrip"></div>
-    <span id="schoolShare" onclick="shareSchoolLink()" style="display:none;font-size:11px;color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-bottom:1rem;"></span>
     <div class="interest-filter" id="interestFilter"></div>
     <div class="dir-status" id="dirStatus"></div>
+    <span id="schoolShare" onclick="shareSchoolLink()" style="display:none;font-size:11px;color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-bottom:1rem;"></span>
 
     <div class="student-grid" id="studentGrid"></div>
     <div class="empty-state" id="studentsEmpty" style="display:none;" data-en="No student profiles yet. Sign in under My Profile and build yours to be the first!" data-he="עדיין אין פרופילים של סטודנטים. התחברו תחת ׳הפרופיל שלי׳ ובנו את שלכם כדי להיות הראשונים!">No student profiles yet. Sign in under My Profile and build yours to be the first!</div>
@@ -1089,11 +1092,10 @@ async function loadDirectory() {
       .order('updated_at', { ascending: false }));
   }
   if (error) { return; }
-  // School counts for the "browse by school" strip (legacy blank = HaAruga).
+  // How many schools are represented (for the "N schools" status line; legacy blank = HaAruga).
   const schoolCounts = {};
   (data || []).forEach(r => { const k = r.school || 'haaruga'; schoolCounts[k] = (schoolCounts[k] || 0) + 1; });
   schoolsRepresented = Object.keys(schoolCounts).length;
-  renderSchoolStrip(schoolCounts);
   if (!data || !data.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   grid.innerHTML = data.map(p => {
@@ -1169,6 +1171,7 @@ function setLang(lang) {
   loadPosts();   // re-render bulletin posts (type labels + edit/delete) in the new language
   loadLocations();   // re-render the location library in the new language
   loadContactRequests();   // re-render the contact-requests panel + recreate the badge
+  renderInterestFilter();   // re-render the (collapsible) interest filter label in the new language
   if (currentProfileId && document.getElementById('page-profile').classList.contains('active')) {
     showProfile(currentProfileId);
   }
@@ -1211,8 +1214,8 @@ function statusLabel(v, year) {
 
 function setSchoolFilter(val) {
   schoolFilter = val;
-  document.querySelectorAll('#schoolStrip .school-chip').forEach(c =>
-    c.classList.toggle('selected', c.getAttribute('data-school') === val));
+  const sel = document.getElementById('schoolFilterSelect');
+  if (sel && sel.value !== val) sel.value = val;
   const share = document.getElementById('schoolShare');
   if (share) {
     share.style.display = val !== 'all' ? 'inline-block' : 'none';
@@ -1221,7 +1224,7 @@ function setSchoolFilter(val) {
   applyFilters();
 }
 
-// Fill the profile-form school dropdown.
+// Fill the profile-form school dropdown AND the directory school filter dropdown.
 function renderSchoolControls() {
   const form = document.getElementById('pf_school');
   if (form) {
@@ -1229,27 +1232,44 @@ function renderSchoolControls() {
     form.innerHTML = SCHOOLS.map(s => `<option value="${s.key}">${currentLang === 'he' ? s.he : s.en}</option>`).join('');
     if (cur) form.value = cur;
   }
+  const filt = document.getElementById('schoolFilterSelect');
+  if (filt) {
+    filt.innerHTML = `<option value="all">${currentLang === 'he' ? 'כל בתי הספר' : 'All schools'}</option>` +
+      SCHOOLS.map(s => `<option value="${s.key}">${currentLang === 'he' ? s.he : s.en}</option>`).join('');
+    filt.value = schoolFilter;
+  }
 }
 
 // "Browse by school" strip on the Students page: a chip per school (with count),
 // plus a "be the first" chip for empty schools. counts is computed in loadDirectory.
+let schoolsExpanded = false;
+let lastSchoolCounts = {};
 function renderSchoolStrip(counts) {
   const strip = document.getElementById('schoolStrip');
   if (!strip) return;
   counts = counts || {};
+  lastSchoolCounts = counts;
   let total = 0;
   Object.keys(counts).forEach(k => { total += counts[k]; });
+  const populated = SCHOOLS.filter(s => (counts[s.key] || 0) > 0);
+  const empties = SCHOOLS.filter(s => s.key !== 'other' && !((counts[s.key] || 0) > 0));
   let html = `<span class="school-chip${schoolFilter === 'all' ? ' selected' : ''}" data-school="all" onclick="setSchoolFilter('all')">${currentLang === 'he' ? 'הכל' : 'All'} · ${total}</span>`;
-  html += SCHOOLS.filter(s => s.key !== 'other' || counts['other']).map(s => {
-    const n = counts[s.key] || 0;
-    const short = esc(schoolShort(s.key));
-    if (n === 0) {
-      return `<span class="school-chip empty" data-school="${s.key}" onclick="addProfileForSchool('${s.key}')">${short} · ${currentLang === 'he' ? 'היו הראשונים' : 'be the first'}</span>`;
+  html += populated.map(s =>
+    `<span class="school-chip${schoolFilter === s.key ? ' selected' : ''}" data-school="${s.key}" onclick="setSchoolFilter('${s.key}')">${esc(schoolShort(s.key))} · ${counts[s.key]}</span>`
+  ).join('');
+  if (empties.length) {
+    if (schoolsExpanded) {
+      html += empties.map(s =>
+        `<span class="school-chip empty" data-school="${s.key}" onclick="addProfileForSchool('${s.key}')">${esc(schoolShort(s.key))} · ${currentLang === 'he' ? 'היו הראשונים' : 'be the first'}</span>`
+      ).join('');
+      html += `<span class="school-chip ghost" onclick="toggleSchoolsExpanded()">${currentLang === 'he' ? 'פחות ▴' : 'less ▴'}</span>`;
+    } else {
+      html += `<span class="school-chip ghost" onclick="toggleSchoolsExpanded()">+ ${currentLang === 'he' ? 'בית הספר שלכם' : 'your school'}</span>`;
     }
-    return `<span class="school-chip${schoolFilter === s.key ? ' selected' : ''}" data-school="${s.key}" onclick="setSchoolFilter('${s.key}')">${short} · ${n}</span>`;
-  }).join('');
+  }
   strip.innerHTML = html;
 }
+function toggleSchoolsExpanded() { schoolsExpanded = !schoolsExpanded; renderSchoolStrip(lastSchoolCounts); }
 
 // "Be the first" → open the profile form with that school pre-selected.
 function addProfileForSchool(key) {
@@ -2052,19 +2072,24 @@ function renderInterestChips() {
   ).join('');
 }
 
-// Render the interest filter chips above the student directory.
+// Render the interest filter — collapsed behind a tap so it isn't a wall of chips.
+let interestsExpanded = false;
 function renderInterestFilter() {
   const wrap = document.getElementById('interestFilter');
   if (!wrap) return;
-  const labelTxt = currentLang === 'he' ? 'סינון לפי תחום:' : 'Filter by interest:';
+  const n = interestFilter.size;
+  const labelTxt = (currentLang === 'he' ? 'סינון לפי תחום' : 'Filter by interest') + (n ? ` (${n})` : '');
+  const caret = interestsExpanded ? '▴' : '▾';
   const clearTxt = currentLang === 'he' ? 'נקה' : 'Clear';
+  const chips = INTERESTS.map(i =>
+    `<span class="filter-chip${interestFilter.has(i.en) ? ' selected' : ''}" data-value="${i.en}" onclick="toggleInterestFilter(this)">${currentLang === 'he' ? i.he : i.en}</span>`
+  ).join('');
   wrap.innerHTML =
-    `<span class="filter-label" data-en="Filter by interest:" data-he="סינון לפי תחום:">${labelTxt}</span>` +
-    INTERESTS.map(i =>
-      `<span class="filter-chip${interestFilter.has(i.en) ? ' selected' : ''}" data-value="${i.en}" data-en="${i.en}" data-he="${i.he}" onclick="toggleInterestFilter(this)">${currentLang === 'he' ? i.he : i.en}</span>`
-    ).join('') +
-    `<span class="filter-clear" id="filterClear" style="display:${interestFilter.size ? 'inline' : 'none'};" onclick="clearInterestFilter()" data-en="Clear" data-he="נקה">${clearTxt}</span>`;
+    `<span class="filter-toggle" onclick="toggleInterestPanel()">${labelTxt} ${caret}</span>` +
+    `<div id="interestPanel" style="display:${interestsExpanded ? 'flex' : 'none'};flex-wrap:wrap;gap:6px;align-items:center;width:100%;margin-top:8px;">${chips}` +
+    `<span class="filter-clear" id="filterClear" style="display:${n ? 'inline' : 'none'};" onclick="clearInterestFilter()">${clearTxt}</span></div>`;
 }
+function toggleInterestPanel() { interestsExpanded = !interestsExpanded; renderInterestFilter(); }
 
 // ----- Interest tags (type + Enter to add, click to remove) -----
 function tagKey(e) {
