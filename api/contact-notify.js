@@ -34,6 +34,20 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+
+    // Diagnostic: POST {"test":true} — sends a test email to the sender address and reports
+    // exactly what Brevo replied (status + message). Safe: only ever emails the configured sender.
+    if (body.test) {
+      const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({ sender: SENDER, to: [{ email: SENDER.email }], subject: 'HaAruga test email', htmlContent: '<p>Test from the contact-notify function.</p>' })
+      });
+      const txt = await r.text();
+      res.status(200).json({ test: true, brevoStatus: r.status, brevoBody: txt.slice(0, 600), sender: SENDER.email });
+      return;
+    }
+
     const { requestId, type } = body;
     if (!requestId || !type) { res.status(400).json({ error: 'Missing fields' }); return; }
 
