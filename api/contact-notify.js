@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   const sbHeaders = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` };
   const getProfile = async (id) => {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}&select=first_name,last_name,email,whatsapp,instagram`, { headers: sbHeaders });
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}&select=first_name,last_name,email,contact_email,phone,whatsapp,instagram`, { headers: sbHeaders });
     const a = await r.json();
     return Array.isArray(a) ? a[0] : null;
   };
@@ -57,8 +57,9 @@ export default async function handler(req, res) {
       const requester = await getProfile(cr.requester_id);
       if (requester && requester.email && owner) {
         const lines = [];
-        if (owner.email) lines.push(`Email: ${owner.email}`);
+        if (owner.contact_email) lines.push(`Email: ${owner.contact_email}`);
         if (owner.whatsapp) lines.push(`WhatsApp: +${owner.whatsapp}`);
+        if (owner.phone) lines.push(`Phone: ${owner.phone}`);
         if (owner.instagram) lines.push(`Instagram: @${owner.instagram}`);
         await sendEmail(requester.email,
           `${owner.first_name || 'Your contact'} approved your request · אושרה הבקשה שלכם`,

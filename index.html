@@ -824,9 +824,20 @@ footer span{color:var(--tan);}
       <input type="text" id="pf_working" class="form-input" data-placeholder-en="e.g. Short doc about market vendors in Jaffa" data-placeholder-he="למשל: דוקומנטרי קצר על סוחרי השוק ביפו" placeholder="e.g. Short doc about market vendors in Jaffa">
     </div>
     <h3 class="form-section-title" data-en="Links &amp; contact" data-he="קישורים וצור קשר">Links &amp; contact</h3>
+    <span style="font-size:11px;color:var(--text-muted);margin:-6px 0 10px;display:inline-block;" data-en="All optional — share whatever you're comfortable with. These stay hidden until you approve a contact request." data-he="הכול רשות — שתפו מה שנוח לכם. הפרטים מוסתרים עד שתאשרו בקשת יצירת קשר.">All optional — share whatever you're comfortable with. These stay hidden until you approve a contact request.</span>
     <div class="form-group">
-      <label class="form-label" data-en="Personal website" data-he="אתר אישי">Personal website</label>
-      <input type="url" id="pf_website" class="form-input" placeholder="https://yourname.com">
+      <label class="form-label" data-en="Contact email" data-he="אימייל ליצירת קשר">Contact email</label>
+      <input type="email" id="pf_contact_email" class="form-input" data-placeholder-en="you@email.com" data-placeholder-he="you@email.com" placeholder="you@email.com">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" data-en="WhatsApp number" data-he="מספר וואטסאפ">WhatsApp number</label>
+        <input type="text" id="pf_whatsapp" class="form-input" data-placeholder-en="e.g. 972521234567 (country code, no +)" data-placeholder-he="למשל 972521234567 (קידומת מדינה, בלי +)" placeholder="e.g. 972521234567 (country code, no +)">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-en="Phone (Israeli number)" data-he="טלפון (מספר ישראלי)">Phone (Israeli number)</label>
+        <input type="text" id="pf_phone" class="form-input" data-placeholder-en="e.g. 052-123-4567" data-placeholder-he="למשל 052-123-4567" placeholder="e.g. 052-123-4567">
+      </div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -834,8 +845,8 @@ footer span{color:var(--tan);}
         <input type="text" id="pf_instagram" class="form-input" placeholder="yourhandle">
       </div>
       <div class="form-group">
-        <label class="form-label" data-en="WhatsApp number" data-he="מספר וואטסאפ">WhatsApp number</label>
-        <input type="text" id="pf_whatsapp" class="form-input" data-placeholder-en="e.g. 972521234567 (country code, no +)" data-placeholder-he="למשל 972521234567 (קידומת מדינה, בלי +)" placeholder="e.g. 972521234567 (country code, no +)">
+        <label class="form-label" data-en="Personal website" data-he="אתר אישי">Personal website</label>
+        <input type="url" id="pf_website" class="form-input" placeholder="https://yourname.com">
       </div>
     </div>
     <h3 class="form-section-title" data-en="Project Gallery" data-he="גלריית פרויקטים">Project Gallery</h3>
@@ -919,7 +930,7 @@ function showPage(name) {
 }
 
 function renderProfilePage(p) {
-  currentProfileContact = { email: p.email, whatsapp: p.whatsapp, instagram: p.instagram };
+  currentProfileContact = { email: p.contact_email, whatsapp: p.whatsapp, phone: p.phone, instagram: p.instagram };
   renderContactButton(p);
 
   const name = ((p.first_name||'') + ' ' + (p.last_name||'')).trim() || 'Student';
@@ -1066,6 +1077,8 @@ function previewProfile() {
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
+    phone: val('pf_phone').trim(),
+    contact_email: val('pf_contact_email').trim(),
     photo: photoDataUrl,
     gallery: galleryUrls,
     email: (authSession && authSession.user) ? authSession.user.email : ''
@@ -1961,6 +1974,8 @@ async function saveProfile() {
     website: val('pf_website'),
     instagram: val('pf_instagram').replace(/^@/, ''),
     whatsapp: val('pf_whatsapp').replace(/[^0-9]/g, ''),
+    phone: val('pf_phone').trim(),
+    contact_email: val('pf_contact_email').trim(),
     gallery: galleryUrls,
     updated_at: new Date().toISOString()
   };
@@ -2005,6 +2020,7 @@ async function loadMyProfile() {
   setChips('lovesArea', p.fav_films); setChips('nopeArea', p.disliked_films);
   setVal('pf_website', p.website);
   setVal('pf_instagram', p.instagram); setVal('pf_whatsapp', p.whatsapp);
+  setVal('pf_phone', p.phone); setVal('pf_contact_email', p.contact_email);
   setTags(p.interests || []);
   galleryUrls = p.gallery || [];
   renderMyGallery();
@@ -2458,7 +2474,12 @@ async function requestContact(ownerId) {
     .upsert({ owner_id: ownerId, requester_id: session.user.id, requester_name, status: 'pending' }, { onConflict: 'owner_id,requester_id' })
     .select('id').maybeSingle();
   if (error) { showToast(error.message); return; }
-  showToast(currentLang === 'he' ? 'הבקשה נשלחה — הם יקבלו התראה.' : 'Request sent — they\'ll be notified.');
+  openInfo(
+    currentLang === 'he' ? '✓ הבקשה נשלחה' : '✓ Request sent',
+    currentLang === 'he'
+      ? 'הם יקבלו התראה ויוכלו לאשר או לדחות. אם יאשרו — תקבלו את פרטי הקשר שלהם.'
+      : "They'll be notified and can approve or decline. If they approve, you'll get their contact info."
+  );
   if (row && row.id) notifyContact(row.id, 'request');
   viewerContactStatus = 'pending';
   renderContactButton({ id: ownerId });
@@ -2521,7 +2542,7 @@ function updateContactBadge(n) {
 
 function openContactModal() {
   const c = currentProfileContact;
-  if (!c || (!c.email && !c.whatsapp && !c.instagram)) {
+  if (!c || (!c.email && !c.whatsapp && !c.phone && !c.instagram)) {
     showToast(currentLang === 'he' ? 'אין פרטי קשר זמינים' : 'No contact details provided.');
     return;
   }
@@ -2542,6 +2563,12 @@ function openContactModal() {
       <div class="contact-icon whatsapp">💬</div>
       <div><div class="contact-label">WhatsApp</div>
       <div class="contact-value">+${c.whatsapp}</div></div></a>`);
+  }
+  if (c.phone) {
+    opts.push(`<a class="contact-option" href="tel:${c.phone.replace(/[^0-9+]/g, '')}">
+      <div class="contact-icon whatsapp">📞</div>
+      <div><div class="contact-label">${l === 'he' ? 'טלפון' : 'Phone'}</div>
+      <div class="contact-value">${c.phone}</div></div></a>`);
   }
   if (c.instagram) {
     opts.push(`<a class="contact-option" href="https://instagram.com/${c.instagram}" target="_blank" rel="noopener">
