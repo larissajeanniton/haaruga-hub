@@ -2454,12 +2454,21 @@ async function requestContact(ownerId) {
   let requester_name = session.user.email;
   const { data: prof } = await sb.from('profiles').select('first_name,last_name').eq('id', session.user.id).maybeSingle();
   if (prof) requester_name = ((prof.first_name || '') + ' ' + (prof.last_name || '')).trim() || session.user.email;
-  const { error } = await sb.from('contact_requests')
-    .upsert({ owner_id: ownerId, requester_id: session.user.id, requester_name, status: 'pending' }, { onConflict: 'owner_id,requester_id' });
+  const { data: row, error } = await sb.from('contact_requests')
+    .upsert({ owner_id: ownerId, requester_id: session.user.id, requester_name, status: 'pending' }, { onConflict: 'owner_id,requester_id' })
+    .select('id').maybeSingle();
   if (error) { showToast(error.message); return; }
   showToast(currentLang === 'he' ? 'הבקשה נשלחה — הם יקבלו התראה.' : 'Request sent — they\'ll be notified.');
+  if (row && row.id) notifyContact(row.id, 'request');
   viewerContactStatus = 'pending';
   renderContactButton({ id: ownerId });
+}
+// Ask the email helper (Vercel function) to send a nudge. Fire-and-forget — the in-app flow
+// works fine even if the helper isn't deployed yet (the fetch just fails silently).
+function notifyContact(requestId, type) {
+  try {
+    fetch('/api/contact-notify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ requestId, type }) });
+  } catch (e) { /* no-op */ }
 }
 
 // Owner side: load my incoming pending requests into the My-Profile panel + nav badge.
@@ -2493,6 +2502,7 @@ async function respondRequest(id, approve) {
   const { error } = await sb.from('contact_requests').update({ status: approve ? 'approved' : 'declined' }).eq('id', id);
   if (error) { showToast(error.message); return; }
   showToast(approve ? (currentLang === 'he' ? 'אושר' : 'Approved') : (currentLang === 'he' ? 'נדחה' : 'Declined'));
+  if (approve) notifyContact(id, 'approved');
   loadContactRequests();
 }
 function updateContactBadge(n) {

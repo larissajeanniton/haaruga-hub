@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/profile/:id", "destination": "/index.html" },
+    { "source": "/school/:key", "destination": "/index.html" }
+  ]
+}
