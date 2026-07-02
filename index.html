@@ -1586,8 +1586,12 @@ function deleteProfile(id) {
     currentLang === 'he' ? 'פעולת ניהול — לא ניתן לבטל.' : 'Admin action — this cannot be undone.',
     currentLang === 'he' ? 'מחיקה' : 'Delete',
     async () => {
-      const { error } = await sb.from('profiles').delete().eq('id', id);
+      const { data, error } = await sb.from('profiles').delete().eq('id', id).select('id');
       if (error) { showToast(error.message); return; }
+      if (!data || !data.length) {   // RLS blocked it — nothing was actually removed
+        showToast(currentLang === 'he' ? 'לא ניתן למחוק — חסרה הרשאת ניהול (הריצו את ה-SQL).' : "Couldn't delete — admin permission missing (run the SQL).");
+        return;
+      }
       showToast(currentLang === 'he' ? 'הפרופיל נמחק' : 'Profile deleted.');
       showPage('home');
       loadDirectory();
