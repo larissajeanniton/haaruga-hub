@@ -13,8 +13,8 @@ export default async function handler(req, res) {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const BREVO_KEY = process.env.BREVO_API_KEY;
-  const SENDER = { name: 'HaAruga Hub', email: 'larissa.jeanniton@gmail.com' };
-  const SITE = 'https://haaruga-hub.vercel.app';
+  const SENDER = { name: 'Bama Hub', email: 'hello@bamahub.co.il' };
+  const SITE = 'https://bamahub.co.il';
 
   if (!SUPABASE_URL || !SERVICE_KEY || !BREVO_KEY) { res.status(500).json({ error: 'Server not configured' }); return; }
 
@@ -34,19 +34,6 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-
-    // Diagnostic: POST {"test":true} — sends a test email to the sender address and reports
-    // exactly what Brevo replied (status + message). Safe: only ever emails the configured sender.
-    if (body.test) {
-      const r = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: { 'api-key': BREVO_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({ sender: SENDER, to: [{ email: SENDER.email }], subject: 'HaAruga test email', htmlContent: '<p>Test from the contact-notify function.</p>' })
-      });
-      const txt = await r.text();
-      res.status(200).json({ test: true, brevoStatus: r.status, brevoBody: txt.slice(0, 600), sender: SENDER.email });
-      return;
-    }
 
     const { requestId, type } = body;
     if (!requestId || !type) { res.status(400).json({ error: 'Missing fields' }); return; }
