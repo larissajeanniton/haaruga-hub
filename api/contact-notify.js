@@ -47,11 +47,11 @@ export default async function handler(req, res) {
       const owner = await getProfile(cr.owner_id);
       if (owner && owner.email) {
         await sendEmail(owner.email,
-          'Someone wants your contact info · מישהו מבקש את פרטי הקשר שלכם',
+          'A creative wants to connect! · יוצר/ת רוצה להתחבר',
           `<p>Hi ${owner.first_name || ''},</p>
-           <p><strong>${cr.requester_name || 'Someone'}</strong> would like your contact info on the HaAruga hub. Approve or decline it on your profile page.</p>
-           <p style="color:#6b6b5e;">‏${cr.requester_name || 'מישהו'} מבקש/ת את פרטי הקשר שלכם במרכז הערוגה. אפשר לאשר או לדחות בעמוד הפרופיל.</p>
-           <p><a href="${SITE}" style="color:#c0392b;">Open the hub → / פתחו את המרכז</a></p>`);
+           <p><strong>${cr.requester_name || 'Someone'}</strong> would like your contact info on Bama Hub. Approve or decline it on your profile page.</p>
+           <p style="color:#6b6b5e;">‏${cr.requester_name || 'מישהו'} מבקש/ת את פרטי הקשר שלכם ב-Bama Hub. אפשר לאשר או לדחות בעמוד הפרופיל.</p>
+           <p><a href="${SITE}" style="color:#c0392b;">Open Bama Hub → / פתחו את Bama Hub</a></p>`);
       }
     } else if (type === 'approved' && cr.status === 'approved') {
       const owner = await getProfile(cr.owner_id);
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
         if (owner.instagram) lines.push(`Instagram: @${owner.instagram}`);
         await sendEmail(requester.email,
           `${owner.first_name || 'Your contact'} approved your request · אושרה הבקשה שלכם`,
-          `<p><strong>${owner.first_name || ''} ${owner.last_name || ''}</strong> approved your contact request on the HaAruga hub:</p>
+          `<p><strong>${owner.first_name || ''} ${owner.last_name || ''}</strong> approved your contact request on Bama Hub:</p>
            <p>${lines.join('<br>') || '(no details listed)'}</p>
            <p style="color:#6b6b5e;">‏הבקשה שלכם לפרטי קשר אושרה. הפרטים מופיעים למעלה.</p>
            <p>Reach out and make something together. 🎬</p>`);
