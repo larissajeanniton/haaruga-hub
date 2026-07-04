@@ -288,10 +288,10 @@ footer span{color:var(--tan);}
     <span class="nav-sub" data-en="Film students &amp; alumni" data-he="סטודנטים ובוגרי קולנוע">Film students &amp; alumni</span>
   </div>
   <div class="nav-links">
-    <div class="nav-link active" onclick="showPage('home')" data-en="Students" data-he="סטודנטים">Students</div>
+    <div class="nav-link active" onclick="showPage('home')" data-en="Creators" data-he="יוצרים">Creators</div>
     <div class="nav-link" onclick="showPage('bulletin')" data-en="Bulletin" data-he="לוח מודעות">Bulletin</div>
     <div class="nav-link" onclick="showPage('locations')" data-en="Locations" data-he="לוקיישנים">Locations</div>
-    <div class="nav-link" onclick="showPage('faculty')" data-en="Faculty" data-he="מרצים">Faculty</div>
+    <div class="nav-link" onclick="showPage('faculty')" data-en="Faculty" data-he="מרצים" style="display:none;">Faculty</div>
     <div class="nav-link" onclick="showPage('editProfile')" data-en="My Profile" data-he="הפרופיל שלי">My Profile<span id="contactBadge" style="display:none;align-items:center;justify-content:center;background:var(--red);color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;padding:0 4px;margin-inline-start:6px;">0</span></div>
   </div>
   <div class="nav-lang">
@@ -388,8 +388,9 @@ footer span{color:var(--tan);}
 
   <div class="section">
     <div class="section-header">
-      <h2 class="section-title" data-en="Students" data-he="סטודנטים">Students</h2>
+      <h2 class="section-title" data-en="Creators" data-he="יוצרים">Creators</h2>
       <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+        <select id="creatorTypeSelect" class="form-input" style="width:auto;font-weight:500;font-size:13px;padding:6px 12px;border-color:var(--sage);color:var(--sage);" onchange="setCreatorTypeFilter(this.value)"></select>
         <input type="text" id="studentSearch" class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" oninput="setSearch(this.value)" data-placeholder-en="Search by name…" data-placeholder-he="חיפוש לפי שם…" placeholder="Search by name…">
         <select id="schoolFilterSelect" class="form-input" style="width:auto;font-size:12px;padding:5px 10px;" onchange="setSchoolFilter(this.value)"></select>
         <select id="trackFilterSelect" class="form-input" style="display:none;width:auto;font-size:12px;padding:5px 10px;" onchange="setTrackFilter(this.value)">
@@ -406,7 +407,7 @@ footer span{color:var(--tan);}
     <span id="schoolShare" onclick="shareSchoolLink()" style="display:none;font-size:11px;color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-bottom:1rem;"></span>
 
     <div class="student-grid" id="studentGrid"></div>
-    <div class="empty-state" id="studentsEmpty" style="display:none;" data-en="No student profiles yet. Sign in under My Profile and build yours to be the first!" data-he="עדיין אין פרופילים של סטודנטים. התחברו תחת ׳הפרופיל שלי׳ ובנו את שלכם כדי להיות הראשונים!">No student profiles yet. Sign in under My Profile and build yours to be the first!</div>
+    <div class="empty-state" id="studentsEmpty" style="display:none;" data-en="No creator profiles yet. Sign in under My Profile and build yours to be the first!" data-he="עדיין אין פרופילים של יוצרים. התחברו תחת ׳הפרופיל שלי׳ ובנו את שלכם כדי להיות הראשונים!">No creator profiles yet. Sign in under My Profile and build yours to be the first!</div>
   </div>
 </div>
 
@@ -981,8 +982,8 @@ function renderProfilePage(p) {
     : '<span style="color:var(--text-muted);font-size:13px;">—</span>';
 
   const links = [];
-  if (p.website) links.push(`<div><a href="${esc(p.website)}" target="_blank" rel="noopener" style="color:var(--amber);">🌐 ${currentLang==='he'?'אתר':'Website'} ↗</a></div>`);
-  if (p.instagram) links.push(`<div><a href="https://instagram.com/${esc(p.instagram)}" target="_blank" rel="noopener" style="color:var(--amber);">📷 Instagram ↗</a></div>`);
+  if (p.website) links.push(`<div><a href="${esc(p.website)}" target="_blank" rel="noopener" style="color:var(--amber);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>${currentLang==='he'?'אתר':'Website'} ↗</a></div>`);
+  if (p.instagram) links.push(`<div><a href="https://instagram.com/${esc(p.instagram)}" target="_blank" rel="noopener" style="color:var(--amber);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor" stroke="none"/></svg>Instagram ↗</a></div>`);
   document.getElementById('profileWork').innerHTML = links.length
     ? links.join('')
     : '<span style="color:var(--text-muted);font-size:13px;">—</span>';
@@ -1186,6 +1187,7 @@ function setLang(lang) {
   loadLocations();   // re-render the location library in the new language
   loadContactRequests();   // re-render the contact-requests panel + recreate the badge
   renderInterestFilter();   // re-render the (collapsible) interest filter label in the new language
+  renderCreatorTypeControl();   // re-render the "Type of Creator" dropdown labels in the new language
   if (currentProfileId && document.getElementById('page-profile').classList.contains('active')) {
     showProfile(currentProfileId);
   }
@@ -1200,9 +1202,11 @@ let schoolFilter = 'all';
 let schoolsRepresented = 0;
 let pendingSchool = null;
 const interestFilter = new Set();
+let creatorTypeFilter = 'all';
 
 function setTrackFilter(val) { trackFilter = val; applyFilters(); }
 function setSearch(val) { searchQuery = val.trim().toLowerCase(); applyFilters(); }
+function setCreatorTypeFilter(val) { creatorTypeFilter = val; applyFilters(); }
 
 // ===== Film schools (multi-school) =====
 const SCHOOLS = [
@@ -1332,9 +1336,11 @@ function applyFilters() {
     const school = card.getAttribute('data-school') || '';
     const trackOk = trackFilter === 'all' || track === trackFilter;
     const intOk = interestFilter.size === 0 || ints.some(i => interestFilter.has(i));
+    const creatorRoles = CREATOR_TYPE_ROLES[creatorTypeFilter];
+    const creatorOk = !creatorRoles || ints.some(i => creatorRoles.includes(i));
     const nameOk = !searchQuery || name.includes(searchQuery);
     const schoolOk = schoolFilter === 'all' || school === schoolFilter;
-    const vis = trackOk && intOk && nameOk && schoolOk;
+    const vis = trackOk && intOk && creatorOk && nameOk && schoolOk;
     card.style.display = vis ? 'block' : 'none';
     if (vis) shown++;
   });
@@ -1345,7 +1351,7 @@ function applyFilters() {
 function updateDirStatus(shown, total) {
   const el = document.getElementById('dirStatus');
   if (!el) return;
-  const filtering = trackFilter !== 'all' || interestFilter.size > 0 || !!searchQuery || schoolFilter !== 'all';
+  const filtering = creatorTypeFilter !== 'all' || trackFilter !== 'all' || interestFilter.size > 0 || !!searchQuery || schoolFilter !== 'all';
   if (total === 0) { el.textContent = ''; return; }   // empty database handled by studentsEmpty
   if (shown === 0) {
     if (schoolFilter !== 'all') {
@@ -1354,17 +1360,17 @@ function updateDirStatus(shown, total) {
         `<span style="color:var(--red);cursor:pointer;text-decoration:underline;text-underline-offset:2px;" onclick="addProfileForSchool('${schoolFilter}')">${currentLang === 'he' ? 'היו הראשונים!' : 'be the first!'}</span>`;
     } else {
       el.textContent = currentLang === 'he'
-        ? 'אין סטודנטים שתואמים את הסינון. נסו לבטל חלק מהבחירות.'
-        : 'No students match these filters. Try removing some.';
+        ? 'אין יוצרים שתואמים את הסינון. נסו לבטל חלק מהבחירות.'
+        : 'No creators match these filters. Try removing some.';
     }
   } else if (filtering) {
     el.textContent = currentLang === 'he'
-      ? `מציג ${shown} מתוך ${total} סטודנטים`
-      : `Showing ${shown} of ${total} students`;
+      ? `מציג ${shown} מתוך ${total} יוצרים`
+      : `Showing ${shown} of ${total} creators`;
   } else {
     const schoolsTxt = schoolsRepresented > 1
       ? (currentLang === 'he' ? ` · ${schoolsRepresented} בתי ספר` : ` · ${schoolsRepresented} schools`) : '';
-    el.textContent = (currentLang === 'he' ? `${total} סטודנטים` : `${total} students`) + schoolsTxt;
+    el.textContent = (currentLang === 'he' ? `${total} יוצרים` : `${total} creators`) + schoolsTxt;
   }
 }
 
@@ -2092,6 +2098,29 @@ const INTERESTS = [
   { en: 'Animation',           he: 'אנימציה' }
 ];
 const INTEREST_SET = new Set(INTERESTS.map(i => i.en));
+
+// ----- Creator types: the prominent "Type of Creator" filter, built by grouping interests -----
+// A profile shows under a type if ANY of its interests fall in that type's `roles` list.
+// `roles: null` = "All Creators" (no filtering). Edit these groupings freely.
+const CREATOR_TYPES = [
+  { key: 'all',              en: 'All Creators',      he: 'כל היוצרים',   roles: null },
+  { key: 'directors',        en: 'Directors',         he: 'במאים',        roles: ['Directing','Assistant Directing'] },
+  { key: 'cinematographers', en: 'Cinematographers',  he: 'צלמי קולנוע',  roles: ['Cinematography','Camera Operating'] },
+  { key: 'actors',           en: 'Actors',            he: 'שחקנים',       roles: ['Acting'] },
+  { key: 'editors',          en: 'Editors',           he: 'עורכים',       roles: ['Editing','Color Grading'] },
+  { key: 'screenwriters',    en: 'Screenwriters',     he: 'תסריטאים',     roles: ['Screenwriting'] },
+  { key: 'producers',        en: 'Producers',         he: 'מפיקים',       roles: ['Producing'] },
+  { key: 'crew',             en: 'Crew & Other',      he: 'צוות ואחר',    roles: ['Photography','Sound','Lighting','Production Design','Costume Design','Hair & Makeup','Visual Effects','Music & Scoring','Casting','VR / Immersive','Theater','Documentary','Animation'] }
+];
+const CREATOR_TYPE_ROLES = Object.fromEntries(CREATOR_TYPES.map(t => [t.key, t.roles]));
+// Populate the "Type of Creator" dropdown (labels follow the current language; keeps the selection).
+function renderCreatorTypeControl() {
+  const sel = document.getElementById('creatorTypeSelect');
+  if (!sel) return;
+  const cur = creatorTypeFilter || 'all';
+  sel.innerHTML = CREATOR_TYPES.map(t => `<option value="${t.key}">${currentLang === 'he' ? t.he : t.en}</option>`).join('');
+  sel.value = cur;
+}
 // Localized label for a stored interest; custom/unknown values are shown as typed.
 function interestLabel(v) {
   const m = INTERESTS.find(i => i.en === v);
@@ -2557,26 +2586,26 @@ function openContactModal() {
 
   const opts = [];
   if (c.email) {
-    opts.push(`<a class="contact-option" href="mailto:${c.email}?subject=${encodeURIComponent('HaAruga Hub')}">
-      <div class="contact-icon email">✉️</div>
+    opts.push(`<a class="contact-option" href="mailto:${c.email}?subject=${encodeURIComponent('Bama Hub')}">
+      <div class="contact-icon email"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg></div>
       <div><div class="contact-label">${l === 'he' ? 'אימייל' : 'Email'}</div>
       <div class="contact-value">${c.email}</div></div></a>`);
   }
   if (c.whatsapp) {
     opts.push(`<a class="contact-option" href="https://wa.me/${c.whatsapp}" target="_blank" rel="noopener">
-      <div class="contact-icon whatsapp">💬</div>
+      <div class="contact-icon whatsapp"><svg viewBox="0 0 24 24" width="20" height="20" fill="#1ea952"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.359.101 11.945c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652a11.9 11.9 0 005.71 1.454h.006c6.585 0 11.946-5.359 11.949-11.945a11.87 11.87 0 00-3.48-8.408"/></svg></div>
       <div><div class="contact-label">WhatsApp</div>
       <div class="contact-value">+${c.whatsapp}</div></div></a>`);
   }
   if (c.phone) {
     opts.push(`<a class="contact-option" href="tel:${c.phone.replace(/[^0-9+]/g, '')}">
-      <div class="contact-icon whatsapp">📞</div>
+      <div class="contact-icon whatsapp"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1ea952" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
       <div><div class="contact-label">${l === 'he' ? 'טלפון' : 'Phone'}</div>
       <div class="contact-value">${c.phone}</div></div></a>`);
   }
   if (c.instagram) {
     opts.push(`<a class="contact-option" href="https://instagram.com/${c.instagram}" target="_blank" rel="noopener">
-      <div class="contact-icon instagram">📷</div>
+      <div class="contact-icon instagram"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.3" fill="var(--amber)" stroke="none"/></svg></div>
       <div><div class="contact-label">Instagram</div>
       <div class="contact-value">@${c.instagram}</div></div></a>`);
   }
@@ -2611,6 +2640,7 @@ if (sb) {
 renderInterestChips();
 renderInterestFilter();
 renderSchoolControls();
+renderCreatorTypeControl();
 loadDirectory();
 loadPosts();
 routeFromPath();   // open a /profile/<id> or /school/<key> deep link if present
