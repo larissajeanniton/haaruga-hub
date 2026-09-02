@@ -2,5 +2,12 @@
   "rewrites": [
     { "source": "/profile/:id", "destination": "/index.html" },
     { "source": "/school/:key", "destination": "/index.html" }
-  ]
+  ],
+  "crons": [
+    { "path": "/api/digest-prepare", "schedule": "0 6 * * 4" }
+  ],
+  "functions": {
+    "api/digest-send.js": { "maxDuration": 60 },
+    "api/digest-prepare.js": { "maxDuration": 30 }
+  }
 }
