@@ -103,10 +103,20 @@ If it did not, that is the first bug to chase: Vercel → project → Cron Jobs 
 last run status.
 
 ### Step 0b — Land the hardening safely (Larissa + Meir, 15 min)
-Before or with the security deploy: add `CRON_SECRET` in Vercel (loose end 6),
-run `supabase-security-hardening.sql`, and decide what to do with existing
-`subscribers` rows (loose end 7): either set `confirmed_at = now()` for the
-handful of known-good emails, or leave them and have them re-subscribe.
+Strict order, because pushing to `main` auto-deploys production within a minute:
+1. Larissa runs `supabase-security-hardening.sql` in Supabase → SQL Editor
+   (it also adds the new `sending` status that `digest-send` now uses to claim
+   a run before mailing, so a double-click on Approve can't send twice).
+2. Larissa adds `CRON_SECRET` in Vercel → project → Settings → Environment
+   Variables (loose end 6).
+3. Only then push `index.html`, `api/`, `vercel.json`, and the updated
+   `MAINTENANCE-AND-ROADMAP.md`.
+4. Decide what to do with existing `subscribers` rows (loose end 7): either set
+   `confirmed_at = now()` for the handful of known-good emails, or leave them
+   and have them re-subscribe.
+
+Meir's Supabase access token does not cover this project, so step 1 must be
+done from Larissa's Supabase login (or Meir gets added to her org first).
 
 ### Step 1 — Wire the newer template (20 min)
 - In `digest-prepare.js`, use `digestSubject(posts.length)` for the stored
