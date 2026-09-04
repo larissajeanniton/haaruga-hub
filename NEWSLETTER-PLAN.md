@@ -1,6 +1,16 @@
 # Bama Hub — Newsletter: Where We Stand & Plan
 
-Written 2026-09-04. Read this before touching anything newsletter-related.
+Written 2026-09-04, updated the same day after the security-hardening pass.
+Read this before touching anything newsletter-related.
+
+> **Pending, not yet deployed (as of 2026-09-04):** a separate security-audit
+> session has uncommitted hardening edits in the working tree that touch the
+> newsletter: subscribe now goes through `/api/subscribe` with **double opt-in**
+> (POST `{email}` sends a confirm link; GET `?token=` confirms), `digest-send`
+> only mails rows with `confirmed_at` set, `digest-prepare` requires a new
+> **`CRON_SECRET`** env var, the `#digest` admin backdoor is gone, and the root
+> `_digest-lib.js` was folded into `api/_digest-lib.js` and deleted. Section 4
+> and the plan below assume those land.
 
 ---
 
@@ -60,14 +70,14 @@ the posts roll into next week. Nothing reaches subscribers without that click.
 
 ## 4. Loose ends (not blockers)
 
-1. **Newer digest template is sitting unused.** The root-level `_digest-lib.js`
-   is a newer version than the deployed `api/_digest-lib.js`: adds a warm
-   greeting line, a "Connect with <first name> →" link per post, and a
-   "This week on Bama Hub: N new posts!" subject. It is not in `api/` and its
-   helpers (`digestSubject`, `digestTitleHtml`) are not wired into
-   `digest-prepare.js`.
+1. **Newer digest template is merged but not wired.** `api/_digest-lib.js`
+   now carries the greeting line, the "Connect with <first name> →" link per
+   post, and `digestSubject` / `digestTitleHtml` ("This week on Bama Hub: N new
+   posts!"). `digest-prepare.js` still uses the old fixed subject and does not
+   call those helpers.
 2. **Dead manual flow still in `index.html`.** The admin "Build newsletter →
-   Copy for Brevo" modal predates the automation and should be removed.
+   Copy for Brevo" modal predates the automation and should be removed (the
+   `#digest` hash backdoor is already gone in the hardening edits).
 3. **`MAINTENANCE-AND-ROADMAP.md` is stale.** Still says haaruga-hub.vercel.app,
    a Gmail sender, and "paste into Brevo".
 4. **No MX record on `bamahub.co.il`.** Replies to `hello@bamahub.co.il` bounce.
@@ -75,6 +85,12 @@ the posts roll into next week. Nothing reaches subscribers without that click.
    forwarding for the domain.
 5. **First cron run unconfirmed.** The cron should have fired Thursday
    2026-09-03. Only Larissa's inbox can confirm a review email arrived.
+6. **`CRON_SECRET` must be added in Vercel before the hardening deploys.**
+   Without it `digest-prepare` will reject the Thursday cron call and the
+   review email stops. Vercel → project → Settings → Environment Variables.
+7. **Existing subscribers have no `confirmed_at`.** After the double opt-in
+   change, `digest-send` skips unconfirmed rows, so anyone who subscribed before
+   the change gets nothing until backfilled or re-confirmed.
 
 ---
 
@@ -86,18 +102,31 @@ Thursday 2026-09-03. If it arrived, the system works and only steps 1–4 remain
 If it did not, that is the first bug to chase: Vercel → project → Cron Jobs →
 last run status.
 
-### Step 1 — Ship the newer template (30 min)
-- Move root `_digest-lib.js` into `api/_digest-lib.js` (replace the old one).
+### Step 0b — Land the hardening safely (Larissa + Meir, 15 min)
+Before or with the security deploy: add `CRON_SECRET` in Vercel (loose end 6),
+run `supabase-security-hardening.sql`, and decide what to do with existing
+`subscribers` rows (loose end 7): either set `confirmed_at = now()` for the
+handful of known-good emails, or leave them and have them re-subscribe.
+
+### Step 1 — Wire the newer template (20 min)
 - In `digest-prepare.js`, use `digestSubject(posts.length)` for the stored
-  subject and `digestTitleHtml(...)` for the on-screen heading.
-- Delete the root-level copy so there is one source of truth.
+  subject and `digestTitleHtml(posts.length)` for the on-screen heading (the
+  helpers already exist in `api/_digest-lib.js`).
 - Add a `replyTo` of Larissa's Gmail to every `sendBrevoEmail` call (fixes
   loose end 4 without DNS work).
+- Do this only after the security session's edits are committed, to avoid
+  editing the same files twice.
 
 ### Step 2 — Remove the dead manual flow (15 min)
 Delete the `digestModal`, `openDigest` / `copyDigest` / `refreshDigestButton`
 functions and the `#digestBtn` button from `index.html`. Keep `ADMIN_EMAILS`
-only if something else uses it.
+only if something else uses it. Same rule: wait for the hardening edits to be
+committed first.
+
+### Step 2b — Test the subscribe flow end to end (10 min)
+After deploy: subscribe with a test address on the Bulletin page, confirm the
+double opt-in email arrives and the link sets `confirmed_at`, then unsubscribe
+from a digest link and confirm the row is gone.
 
 ### Step 3 — Turn on and check analytics (10 min, Larissa in Brevo)
 Brevo → Transactional → Settings: confirm **open tracking** and **click
@@ -107,6 +136,7 @@ Transactional → Statistics.
 ### Step 4 — Update the runbook (10 min)
 Fix `MAINTENANCE-AND-ROADMAP.md`: live URL is www.bamahub.co.il, sender is
 hello@bamahub.co.il, the newsletter is automated (no more pasting into Brevo),
+subscribers must confirm by email, `CRON_SECRET` is a fourth required env var,
 and add "check Brevo statistics" as a monthly item.
 
 ### Later (optional)
